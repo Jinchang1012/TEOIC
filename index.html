@@ -9,12 +9,21 @@
 :root{
   --paper:#F5F4EE; --card:#FFFFFF; --line:#E3E1D4; --line-soft:#EDEBDF;
   --ink:#1C2B23; --ink-soft:#5C6B60; --ink-faint:#939C92;
-  --pine:#24513B; --pine-deep:#16352A; --pine-tint:#E9F0E9; --pine-mid:#3E7157;
+  --pine:#24513B; --pine-deep:#16352A; --pine-tint:#E9F0E9; --pine-mid:#3E7157; --pine-tint-line:#CBDCCB;
   --brass:#A87B24; --brass-tint:#F7F0DC; --brass-line:#E3D5AC;
   --clay:#B0492A; --clay-tint:#F8EAE3; --clay-line:#E5C4B4;
   --radius:14px;
   --sans:"Segoe UI","Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;
   --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#15181B; --card:#1E2422; --line:#2B3330; --line-soft:#242B27;
+    --ink:#E7ECE7; --ink-soft:#A7B4A9; --ink-faint:#75827A;
+    --pine:#3E9268; --pine-deep:#2F7350; --pine-tint:#1C2D25; --pine-mid:#4C9670; --pine-tint-line:#2C4A3B;
+    --brass-tint:#33280F; --brass-line:#4E3C1A;
+    --clay-tint:#301B14; --clay-line:#4E2E22;
+  }
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
@@ -219,7 +228,7 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
   /* 底部導覽（App 風格 tab bar）*/
   .tabs{
     position:fixed;left:0;right:0;bottom:0;z-index:50;
-    display:flex;background:#fff;border:none;border-top:1px solid var(--line);
+    display:flex;background:var(--card);border:none;border-top:1px solid var(--line);
     border-radius:0;padding:4px 2px calc(4px + env(safe-area-inset-bottom));
     margin-bottom:0;overflow-x:visible;
   }
@@ -717,7 +726,7 @@ function rHome(){
     </div>
     ${weak ? '<div class="callout">📌 目前最弱的考點是「<b>'+esc(weak.c.name)+'</b>」（正確率 '+weak.p+'%）——<button style="color:var(--pine);font-weight:700;text-decoration:underline" data-act="goCat" data-cat="'+weak.c.key+'">針對它練一輪</button></div>':''}
   </div>
-  ${isFresh?`<div class="card" style="background:var(--pine-tint);border-color:#CBDCCB">
+  ${isFresh?`<div class="card" style="background:var(--pine-tint);border-color:var(--pine-tint-line)">
     <div style="font-size:14px">📲 在其他裝置練過？<button style="color:var(--pine);font-weight:700;text-decoration:underline;background:none;border:none;font-size:inherit;padding:0;cursor:pointer" data-act="goDataFresh">用「匯入備份」把紀錄帶過來</button></div>
   </div>`:''}
 
@@ -1333,7 +1342,7 @@ function rBank(){
     ${cv.map(w=>'<div class="bank-row"><span>🔤 '+esc(w.word)+'　<span class="faint">'+esc(w.meaning.slice(0,18))+'</span></span><button class="del" data-act="delCustom" data-kind="v" data-id="'+esc(w.id)+'">刪除</button></div>').join('')}
   </div>`:''}
 
-  <div class="card" style="background:var(--pine-tint);border-color:#CBDCCB">
+  <div class="card" style="background:var(--pine-tint);border-color:var(--pine-tint-line)">
     <div class="lbl" style="color:var(--pine)">另一條路：直接叫 Claude 加進內建題庫</div>
     <p style="font-size:14px;margin:0">在 Claude Code 對話裡把題目貼上，說「<b>加進 850 訓練場</b>」，Claude 會讀取格式說明檔、轉檔加入內建題庫並重新發佈，這樣換瀏覽器也不會不見。</p>
   </div>`;
@@ -1707,6 +1716,22 @@ document.addEventListener('keydown', e=>{
     if(btn){ e.preventDefault(); btn.click(); }
   }
 });
+
+/* ── 深色模式：動態切換 <meta name="theme-color">（manifest.json 不支援媒體查詢，維持淺色即可）── */
+function _syncThemeColorMeta(mq){
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(!meta) return;
+  meta.setAttribute('content', mq.matches ? '#15181B' : '#F5F4EE');
+}
+if(typeof window!=='undefined' && window.matchMedia){
+  const _darkMq = window.matchMedia('(prefers-color-scheme: dark)');
+  _syncThemeColorMeta(_darkMq);
+  if(typeof _darkMq.addEventListener==='function'){
+    _darkMq.addEventListener('change', _syncThemeColorMeta);
+  } else if(typeof _darkMq.addListener==='function'){
+    _darkMq.addListener(_syncThemeColorMeta);
+  }
+}
 
 _fillVoiceSel();
 _updateRateBtn();
