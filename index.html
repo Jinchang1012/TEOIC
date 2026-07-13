@@ -1,7 +1,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F5F4EE">
-<title>訓練場</title>
+<title>多益訓練場</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2324513B'/%3E%3Ctext x='50' y='50' font-size='46' text-anchor='middle' dominant-baseline='central' fill='white' font-family='sans-serif'%3E%F0%9F%8E%AF%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root{
   --paper:#F5F4EE; --card:#FFFFFF; --line:#E3E1D4; --line-soft:#EDEBDF;
@@ -72,6 +75,14 @@ button:focus-visible,textarea:focus-visible,details summary:focus-visible{outlin
 .catrow .pc{width:86px;flex:none;text-align:right;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .today-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .callout{background:var(--brass-tint);border:1px solid var(--brass-line);border-radius:12px;padding:12px 16px;font-size:14.5px;margin-top:12px}
+.heatwrap{overflow-x:auto;padding-bottom:2px}
+.heatgrid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;width:max-content}
+.heatgrid i{display:block;width:11px;height:11px;border-radius:3px;background:var(--line-soft)}
+.heatgrid i.pad{background:transparent}
+.heatgrid i.l1{background:var(--pine-tint)}
+.heatgrid i.l2{background:var(--pine-mid)}
+.heatgrid i.l3{background:var(--pine-deep)}
+.heatgrid i.today{outline:1.5px solid var(--ink);outline-offset:1px}
 
 /* ── 單字卡 ── */
 .v-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
@@ -100,7 +111,7 @@ button:focus-visible,textarea:focus-visible,details summary:focus-visible{outlin
 .grade small{display:block;font-weight:400;font-size:11.5px;color:var(--ink-faint);margin-top:2px}
 .starbtn{font-size:22px;line-height:1;color:var(--ink-faint)}
 .starbtn.on{color:var(--brass)}
-.speakbtn{font-size:17px;line-height:1;color:var(--ink-faint);background:none;border:none;padding:2px 4px;cursor:pointer;vertical-align:middle}
+.speakbtn{font-size:17px;line-height:1;color:var(--ink-faint);background:none;border:none;padding:2px 4px;cursor:pointer;vertical-align:middle;display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;margin:-9px -6px}
 .speakbtn:hover{color:var(--pine)}
 .boxdots{display:flex;gap:3px}
 .boxdots i{width:7px;height:7px;border-radius:99px;background:var(--line)}
@@ -196,13 +207,14 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
 @media(max-width:640px){
   html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   body{font-size:16px}
-  #app{max-width:100%;padding:14px 14px calc(72px + env(safe-area-inset-bottom))}
+  #app{max-width:100%;padding:14px 14px calc(var(--tabs-h, 72px) + 16px)}
 
   /* masthead 精簡 */
   .masthead{gap:8px;margin-bottom:14px}
   .eyebrow{font-size:9px}
   .masthead h1{font-size:22px}
   .voicesel{max-width:120px;font-size:12.5px}
+  #ratebtn{width:auto;min-width:0;min-height:36px;padding:6px 10px;font-size:12px;flex:none}
 
   /* 底部導覽（App 風格 tab bar）*/
   .tabs{
@@ -233,6 +245,13 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
   .fc{height:min(58vh,460px)}
   .fc-word{font-size:32px}
   .fc-word-sm{font-size:19px}
+  /* 單字卡底部操作列（翻面鈕／評分鈕／上一張下一張）用 sticky 釘在導覽列正上方，
+     無論使用者捲到哪個位置都不會被 fixed 的 #tabs 蓋住，不依賴 JS 一次性捲動。 */
+  .vbottomrow{
+    position:-webkit-sticky;position:sticky;
+    bottom:calc(var(--tabs-h, 72px) + 12px);
+    z-index:10;
+  }
 
   /* Part 5 題目 */
   .q-sent{font-size:18px}
@@ -249,11 +268,14 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
       <div class="eyebrow">TOEIC TRAINING GROUND</div>
       <h1>訓練場</h1>
     </div>
-    <select id="voicesel" class="voicesel"></select>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <select id="voicesel" class="voicesel"></select>
+      <button id="ratebtn" type="button" class="btn ghost small" title="語速（點擊切換：慢／正常／快）"></button>
+    </div>
   </header>
   <nav class="tabs" id="tabs" role="tablist"></nav>
   <div id="globalBanner"></div>
-  <main id="view"></main>
+  <main id="view"><div class="empty">載入中…</div></main>
 </div>
 
 <script>
@@ -299,7 +321,7 @@ function probeStorage(){
 }
 let storageOK = probeStorage();
 let corruptRaw = null;     // load() 解析失敗時暫存的原始字串，供「下載損毀原始資料」使用
-function defaults(){ return {qstats:{}, vsrs:{}, custom:{questions:[],vocab:[],reading:[],seq:1}, history:{}, meta:{lastSaved:null,lastBackup:null,answersSinceBackup:0}}; }
+function defaults(){ return {qstats:{}, vsrs:{}, custom:{questions:[],vocab:[],reading:[],seq:1}, history:{}, meta:{lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50}}; }
 let store = load();
 function load(){
   let raw=null;
@@ -312,11 +334,13 @@ function load(){
     for(const k in d) if(!(k in s)) s[k]=d[k];
     if(!s.custom.seq) s.custom.seq=1;
     if(!s.custom.reading) s.custom.reading=[];
-    if(!s.meta || typeof s.meta!=='object') s.meta={lastSaved:null,lastBackup:null,answersSinceBackup:0};
+    if(!s.meta || typeof s.meta!=='object') s.meta={lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50};
     else{
       if(s.meta.lastSaved===undefined) s.meta.lastSaved=null;
       if(s.meta.lastBackup===undefined) s.meta.lastBackup=null;
       if(s.meta.answersSinceBackup===undefined) s.meta.answersSinceBackup=0;
+      if(s.meta.reminderSnoozedUntil===undefined) s.meta.reminderSnoozedUntil=null;
+      if(!s.meta.dailyCap) s.meta.dailyCap=50;
     }
     return s;
   }catch(e){ corruptRaw = raw; return defaults(); }
@@ -353,6 +377,40 @@ function streak(){
   while(store.history[String(d)]){ n++; d--; }
   return n;
 }
+function weekCount(){
+  const t=today(); let n=0;
+  for(let d=t-6; d<=t; d++){ const h=store.history[String(d)]; if(h) n+=h.a; }
+  return n;
+}
+/* ── 打卡熱力圖（最近 84 天，GitHub 風格）── */
+function heatCells(){
+  const t=today(), N=84, start=t-(N-1);
+  const startWD=(start+4)%7; // 0=Sun，epoch day 0（1970-01-01）為週四
+  const cells=[];
+  for(let i=0;i<startWD;i++) cells.push(null);
+  for(let d=start; d<=t; d++){
+    const h=store.history[String(d)];
+    cells.push({d, n:h?h.a:0, isToday:d===t});
+  }
+  return cells;
+}
+function heatLevel(n){ return n<=0?0 : n<10?1 : n<30?2 : 3; }
+function fmtEpochDay(d){
+  const dt=new Date(d*864e5), p=n=>String(n).padStart(2,'0');
+  return dt.getUTCFullYear()+'-'+p(dt.getUTCMonth()+1)+'-'+p(dt.getUTCDate());
+}
+function heatmapHtml(){
+  const cells=heatCells();
+  let g='<div class="heatgrid">';
+  cells.forEach(c=>{
+    if(!c){ g+='<i class="pad"></i>'; return; }
+    const lvl=heatLevel(c.n);
+    const title=fmtEpochDay(c.d)+'：'+c.n+' 題';
+    g+='<i class="l'+lvl+(c.isToday?' today':'')+'" title="'+esc(title)+'"></i>';
+  });
+  g+='</div>';
+  return '<div class="heatwrap">'+g+'</div>';
+}
 
 /* ── 工具 ── */
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -380,7 +438,13 @@ function _fillVoiceSel(){
   if(!sel) return;
   if(!SPEECH_OK || !_voices.length){ sel.style.display='none'; sel.innerHTML=''; return; }
   const enVoices = _voices.filter(v=>/^en-/i.test(v.lang));
-  if(!enVoices.length){ sel.style.display='none'; sel.innerHTML=''; return; }
+  if(!enVoices.length){
+    _noEnVoice = true;
+    sel.innerHTML = '<option value="auto">使用系統預設發音</option>';
+    sel.style.display = '';
+    return;
+  }
+  _noEnVoice = false;
   const cur = _savedVoiceName();
   const shortName = n => n.replace(/^Microsoft\s+/i,'').replace(/\s*-\s*(English.*)$/i,'').trim();
   const groups = {};
@@ -399,6 +463,43 @@ function _fillVoiceSel(){
 }
 const VOICE_KEY = 'toeic850_voice';
 function _savedVoiceName(){ try{ return localStorage.getItem(VOICE_KEY) || 'auto'; }catch(e){ return 'auto'; } }
+const RATE_KEY = 'toeic850_rate';
+const RATE_STEPS = [0.8, 0.95, 1.1];
+function _rateLabel(r){ return r===0.8?'慢':r===1.1?'快':'正常'; }
+function _savedRate(){
+  try{
+    const r = parseFloat(localStorage.getItem(RATE_KEY));
+    return RATE_STEPS.includes(r) ? r : 0.95;
+  }catch(e){ return 0.95; }
+}
+function _updateRateBtn(){
+  const b = document.getElementById('ratebtn');
+  if(b) b.textContent = _rateLabel(_savedRate());
+}
+const NOEN_TOAST_KEY = 'toeic850_noenvoice_toast_shown';
+let _noEnVoice = false;
+let _toastTimer = null;
+function showToast(msg){
+  let t = document.getElementById('_toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:88vw;background:var(--pine-deep);color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:200;opacity:0;transition:opacity .25s;pointer-events:none;text-align:center';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  clearTimeout(_toastTimer);
+  requestAnimationFrame(()=>{ t.style.opacity='1'; });
+  _toastTimer = setTimeout(()=>{ t.style.opacity='0'; }, 3600);
+}
+function _maybeShowNoEnVoiceToast(){
+  if(!_noEnVoice) return;
+  try{
+    if(localStorage.getItem(NOEN_TOAST_KEY)) return;
+    localStorage.setItem(NOEN_TOAST_KEY, '1');
+  }catch(e){}
+  showToast('此裝置沒有英文語音，發音可能不準，可到系統設定安裝');
+}
 function _scoreVoice(v){
   let s = 0;
   if(/Natural/i.test(v.name)) s += 100;
@@ -429,11 +530,12 @@ function _pickVoice(){
 }
 function speak(text){
   if(!SPEECH_OK || !text) return;
+  _maybeShowNoEnVoiceToast();
   try{
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(String(text));
     u.lang = ACCENT==='uk' ? 'en-GB' : 'en-US';
-    u.rate = 0.95;
+    u.rate = _savedRate();
     const v = _pickVoice();
     if(v){ try{ u.voice = v; u.lang = v.lang; }catch(e){ /* 指派失敗就用預設聲照唸 */ } }
     speechSynthesis.speak(u);
@@ -469,12 +571,11 @@ const ui = {
   tab:'home',
   vocab:{theme:'all', mode:'due', queue:[], idx:0, flip:false, done:0, browseIdx:0},
   quiz:{stage:'setup', cats:new Set(['all']), count:10, src:'smart', list:[], idx:0, picked:null, session:[]},
-  read:{stage:'list', filter:'all', setId:null, idx:0, answers:{}, showTrans:false},
+  read:{stage:'list', filter:'all', setId:null, idx:0, answers:{}, showTrans:false, startTime:null, elapsedFinal:null},
   fav:{filter:'star', open:new Set()},
   bank:{msg:null},
   backupShow:false,
   storageBannerClosed:false,
-  backupReminderClosed:false,
 };
 
 /* =====================================================================
@@ -497,6 +598,47 @@ function renderGlobalBanner(){
     gb.innerHTML = '';
   }
 }
+/* 手機底部固定導覽列（#tabs）防遮蓋機制。
+   分兩步，任何內容高度都成立：
+   1) syncTabsSafeArea()：實測 #tabs 目前的實際渲染高度，寫回 CSS 變數 --tabs-h，
+      讓 #app 的 bottom padding 永遠 >= tabsHeight + 16px 緩衝。這保證文件總高度
+      (content + padding) 一定比「視窗高度 - tabsHeight」多出至少 16px 的可捲動空間，
+      也就是說：只要內容本身頂到了導覽列，一定「還能往下捲」，捲動就一定能把內容
+      徹底捲出導覽列覆蓋範圍——這是第 2 步能生效的前提。
+   2) ensureBottomActionsVisible()：實測 #view 目前最後一個元素（該分頁最下方的
+      互動內容，例如單字卡的翻面/評分按鈕）的 bottom 是否超過「導覽列頂端」。
+      若超過（重疊 overlap px），代表未捲動時會被蓋住，就把頁面往下捲動剛好
+      overlap px（並用 1) 保證的可捲動空間夾住，不會捲過頭），使該內容的 bottom
+      精準貼齊導覽列頂端之上，重疊必為 0。這與內容實際高度、字型大小、裝置尺寸
+      都無關，因為判斷與修正都是即時量測目前渲染結果，而非猜測固定像素值。 */
+function syncTabsSafeArea(){
+  const t = document.getElementById('tabs');
+  if(!t) return;
+  if(window.innerWidth>640){ document.documentElement.style.removeProperty('--tabs-h'); return; }
+  const h = t.offsetHeight;
+  if(h>0) document.documentElement.style.setProperty('--tabs-h', h+'px');
+}
+function ensureBottomActionsVisible(){
+  /* 只在單字卡分頁生效：這是唯一「設計上應該一screen 內完成、不需捲動」的畫面
+     （翻面／評分鈕）。其餘分頁（總覽、練習列表、閱讀清單…）本來就是可正常捲動的
+     長頁面，若對它們也套用「把最後一個元素頂到導覽列之上」會誤把整頁捲到底，
+     所以刻意不套用在這些分頁上。 */
+  if(window.innerWidth>640 || ui.tab!=='vocab') return;
+  const tabs = document.getElementById('tabs');
+  const view = document.getElementById('view');
+  if(!tabs || !view) return;
+  const last = view.lastElementChild;
+  if(!last) return;
+  const tabsTop = tabs.getBoundingClientRect().top;
+  const overlap = last.getBoundingClientRect().bottom - tabsTop;
+  if(overlap > 0){
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    window.scrollTo(0, Math.min(window.scrollY + overlap, maxScroll));
+  }
+}
+window.addEventListener('resize', ()=>{ syncTabsSafeArea(); ensureBottomActionsVisible(); });
+window.addEventListener('orientationchange', ()=>{ syncTabsSafeArea(); ensureBottomActionsVisible(); });
+
 function render(){
   renderGlobalBanner();
   const dueN = allV().filter(w=>{const s=store.vsrs[w.id]; return !s || s.due<=today();}).length;
@@ -507,6 +649,8 @@ function render(){
   const v = document.getElementById('view');
   v.innerHTML = ({home:rHome, vocab:rVocab, quiz:rQuiz, read:rRead, fav:rFav, bank:rBank}[ui.tab])();
   v.scrollTop=0;
+  syncTabsSafeArea();
+  ensureBottomActionsVisible();
 }
 
 /* ── 總覽 ── */
@@ -518,6 +662,10 @@ function rHome(){
   const mastered = vAll.filter(w=>{const s=store.vsrs[w.id]; return s && s.box>=3;}).length;
   const dueN = vAll.filter(w=>{const s=store.vsrs[w.id]; return !s || s.due<=today();}).length;
   const wrongN = qs.filter(q=>{const s=store.qstats[q.id]; return s && s.lw;}).length;
+  const isFresh = Object.keys(store.vsrs).length===0 && Object.keys(store.history).length===0;
+  const cap = (store.meta && store.meta.dailyCap) || 50;
+  const todayBatch = Math.min(dueN, cap);
+  const estMin = (todayBatch>0||wrongN>0) ? Math.max(1, Math.round((todayBatch*8 + wrongN*40)/60)) : 0;
 
   /* 各考點正確率 */
   const rows = CATEGORIES.map(c=>{
@@ -528,10 +676,11 @@ function rHome(){
   const weak = rows.filter(r=>r.a>=4 && r.p!==null).sort((x,y)=>x.p-y.p)[0];
 
   /* 備份提醒（F4） */
-  const meta = store.meta || {lastSaved:null,lastBackup:null,answersSinceBackup:0};
+  const meta = store.meta || {lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50};
   const asb = meta.answersSinceBackup||0;
   const daysSinceBackup = meta.lastBackup ? Math.floor((Date.now()-Date.parse(meta.lastBackup))/864e5) : Infinity;
-  const showBackupReminder = !ui.backupReminderClosed && (asb>=100 || (!!meta.lastBackup && daysSinceBackup>14) || (!meta.lastBackup && A>=30));
+  const isSnoozed = !!meta.reminderSnoozedUntil && meta.reminderSnoozedUntil > today();
+  const showBackupReminder = !isSnoozed && (asb>=100 || (!!meta.lastBackup && daysSinceBackup>14) || (!meta.lastBackup && A>=30));
   const backupReminderHtml = showBackupReminder ? `
   <div class="card" style="background:var(--brass-tint);border-color:var(--brass-line)">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -555,8 +704,11 @@ function rHome(){
   <div class="card">
     <div class="lbl">今日任務</div>
     <div style="font-size:15px">
-      ${dueN>0 ? '📮 有 <b>'+dueN+'</b> 張單字卡到期待複習' : '✅ 單字卡都複習完了'}
-      ${wrongN>0 ? '　·　錯題本還有 <b>'+wrongN+'</b> 題待消滅' : ''}
+      ${isFresh
+        ? '👋 單字卡會依記憶排程逐步出現，新手建議先從一批開始。'
+        : (dueN>0 ? '📮 今日先複習 <b>'+todayBatch+'</b> 張'+(dueN>cap?'（累積到期 '+dueN+' 張）':'')+(estMin>0?'　·　約 '+estMin+' 分鐘':'') : '✅ 單字卡都複習完了')
+      }
+      ${!isFresh && wrongN>0 ? '　·　錯題本還有 <b>'+wrongN+'</b> 題待消滅' : ''}
     </div>
     <div class="today-acts">
       <button class="btn primary small" data-act="goVocab">複習單字卡</button>
@@ -564,6 +716,15 @@ function rHome(){
       ${wrongN>0?'<button class="btn ghost small" data-act="goWrong">只練錯題</button>':''}
     </div>
     ${weak ? '<div class="callout">📌 目前最弱的考點是「<b>'+esc(weak.c.name)+'</b>」（正確率 '+weak.p+'%）——<button style="color:var(--pine);font-weight:700;text-decoration:underline" data-act="goCat" data-cat="'+weak.c.key+'">針對它練一輪</button></div>':''}
+  </div>
+  ${isFresh?`<div class="card" style="background:var(--pine-tint);border-color:#CBDCCB">
+    <div style="font-size:14px">📲 在其他裝置練過？<button style="color:var(--pine);font-weight:700;text-decoration:underline;background:none;border:none;font-size:inherit;padding:0;cursor:pointer" data-act="goDataFresh">用「匯入備份」把紀錄帶過來</button></div>
+  </div>`:''}
+
+  <div class="card">
+    <div class="lbl">打卡紀錄（最近 12 週）</div>
+    ${heatmapHtml()}
+    <div class="faint" style="font-size:12.5px;margin-top:8px">連續 ${streak()} 天・本週 ${weekCount()} 題</div>
   </div>
 
   <div class="card">
@@ -587,9 +748,10 @@ function rHome(){
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="data-card">
     <div class="lbl">資料</div>
     <p class="muted" style="font-size:13.5px;margin:0 0 8px">學習紀錄存在這個瀏覽器的 localStorage。換裝置或怕遺失時，請下載備份檔保存。</p>
+    ${isFresh?'<p class="muted" style="font-size:13.5px;margin:0 0 8px">📲 在其他裝置練過？可用下方「匯入紀錄」把備份檔帶進來。</p>':''}
     <p class="faint" id="bk-info" style="font-size:12.5px;margin:0 0 10px">${esc(backupInfoLine())}</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn primary small" data-act="dlBackup">⬇ 下載備份檔</button>
@@ -603,6 +765,7 @@ function rHome(){
         <button class="btn ghost small" data-act="impProgDo" data-mode="overwrite">覆蓋匯入</button>
         <button class="btn primary small" data-act="impProgDo" data-mode="merge">合併匯入</button>
       </div>
+      <p class="faint" style="font-size:12px;margin:8px 0 0">合併＝保留較多練習的一方（可重複匯入，不會重複累計）；覆蓋＝完全取代目前紀錄，無法復原。</p>
     </div>`:''}
     <div id="bk-msg"></div>
     ${corruptRaw?`<div class="imp-msg err" style="margin-top:12px">⚠️ 偵測到舊紀錄損毀，資料可能已無法自動讀取。<div style="margin-top:8px"><button class="btn ghost small" data-act="dlCorrupt">下載損毀原始資料</button></div></div>`:''}
@@ -687,6 +850,7 @@ function mergeStore(local, incoming){
   const locB = local.meta.lastBackup?Date.parse(local.meta.lastBackup):0;
   const incB = incM.lastBackup?Date.parse(incM.lastBackup):0;
   if(incB>locB) local.meta.lastBackup = incM.lastBackup;
+  if((incM.reminderSnoozedUntil||0) > (local.meta.reminderSnoozedUntil||0)) local.meta.reminderSnoozedUntil = incM.reminderSnoozedUntil;
   return '合併完成：單字狀態 '+vN+' 筆、題目統計 '+qN+' 筆、歷史 '+hN+' 天'+(cN?('、新增自訂內容 '+cN+' 筆'):'')+'。';
 }
 function makeBackupPayload(){
@@ -713,8 +877,17 @@ function vBrowseList(){
   return allV().filter(w=>ui.vocab.theme==='all'||w.theme===ui.vocab.theme);
 }
 function buildVQueue(){
-  ui.vocab.queue = shuffle(vDueList()).map(w=>w.id);
+  const due = shuffle(vDueList());
+  const cap = (store.meta && store.meta.dailyCap) || 50;
+  ui.vocab.queue = due.slice(0,cap).map(w=>w.id);
   ui.vocab.idx=0; ui.vocab.flip=false; ui.vocab.done=0;
+}
+function vBatchBadge(){
+  if(ui.vocab.mode!=='due') return '';
+  const dueN = vDueList().length;
+  const cap = (store.meta && store.meta.dailyCap) || 50;
+  if(dueN<=cap) return '';
+  return '<div class="faint" style="font-size:12.5px;margin:-4px 0 12px">今日先複習 '+cap+'（累積到期 '+dueN+'）</div>';
 }
 function rVocab(){
   const V=ui.vocab;
@@ -723,7 +896,15 @@ function rVocab(){
   const modeSel = '<div class="v-top"><div class="chiprow">'+
     '<button class="fchip '+(V.mode==='due'?'on':'')+'" data-act="vMode" data-m="due">到期複習</button>'+
     '<button class="fchip '+(V.mode==='browse'?'on':'')+'" data-act="vMode" data-m="browse">自由瀏覽</button>'+
-    '</div><div class="faint" style="font-size:13px">間隔重複：答「記得」的字會隔越來越久才再出現</div></div>';
+    '</div><div class="faint" style="font-size:13px">間隔重複：答「記得」的字會隔越來越久才再出現</div></div>'+
+    vBatchBadge()+
+    `<details style="margin-bottom:12px"><summary><span role="button" aria-label="評分鈕說明">❓ 評分鈕代表什麼？</span></summary>
+      <div style="font-size:13.5px;color:var(--ink-soft);margin-top:8px;line-height:1.7">
+        <div><b>不熟</b>：今天很快就會再出現這張卡。</div>
+        <div><b>有點忘</b>：間隔縮短，明天再看一次。</div>
+        <div><b>記得</b>：間隔拉長，之後隔更久才出現。</div>
+      </div>
+    </details>`;
 
   if(V.mode==='browse'){
     const list=vBrowseList();
@@ -731,7 +912,7 @@ function rVocab(){
     if(V.browseIdx>=list.length) V.browseIdx=0;
     const w=list[V.browseIdx];
     return chips+modeSel+fcHtml(w,true)+`
-      <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="vbottomrow" style="display:flex;justify-content:space-between;align-items:center">
         <button class="btn ghost small" data-act="vPrev">← 上一張</button>
         <span class="faint" style="font-variant-numeric:tabular-nums">${V.browseIdx+1} / ${list.length}</span>
         <button class="btn ghost small" data-act="vNext">下一張 →</button>
@@ -741,6 +922,15 @@ function rVocab(){
   /* 到期複習模式 */
   if(!V.queue.length && !V.done) buildVQueue();
   if(V.idx>=V.queue.length){
+    const remaining = vDueList().length;
+    if(remaining>0){
+      return chips+modeSel+`<div class="card empty" style="padding:48px 16px">
+        <div style="font-size:40px;margin-bottom:8px">🎉</div>
+        <div style="font-size:17px;font-weight:700;color:var(--ink)">本批完成 🎉</div>
+        <p class="muted" style="font-size:14px">這批複習了 ${V.done} 張，還有 ${remaining} 張到期未複習。</p>
+        <button class="btn primary small" data-act="vNextBatch">再練一批（還有 ${remaining} 張）</button>
+      </div>`;
+    }
     return chips+modeSel+`<div class="card empty" style="padding:48px 16px">
       <div style="font-size:40px;margin-bottom:8px">🎉</div>
       <div style="font-size:17px;font-weight:700;color:var(--ink)">今天的到期單字複習完畢</div>
@@ -758,12 +948,12 @@ function rVocab(){
     </div>
     ${fcHtml(w,false)}
     ${V.flip
-      ? `<div class="grade">
+      ? `<div class="grade vbottomrow">
           <button class="g0" data-act="vGrade" data-g="0">不熟<small>今天再出現</small></button>
           <button class="g1" data-act="vGrade" data-g="1">有點忘<small>明天再看</small></button>
           <button class="g2" data-act="vGrade" data-g="2">記得<small>隔 ${SRS_IV[Math.min(4,s.box+1)]} 天</small></button>
         </div>`
-      : '<div style="text-align:center"><button class="btn primary" data-act="vFlip">翻面看解釋</button></div>'}
+      : '<div class="vbottomrow" style="text-align:center"><button class="btn primary" data-act="vFlip">翻面看解釋</button></div>'}
   `;
 }
 function fcHtml(w, browse){
@@ -908,6 +1098,21 @@ function rQuizDone(){
 }
 
 /* ── 閱讀 6・7 ── */
+/* 閱讀計時：session 內即可，不需存檔。每次進入一組時重置起點，
+   用 setInterval 每秒只更新角落的小字，不觸發整頁 render()，避免打斷閱讀。 */
+let _readTimerInt=null;
+function fmtMMSS(sec){ const m=Math.floor(sec/60), s=sec%60; return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'); }
+function stopReadTimer(){ if(_readTimerInt){ clearInterval(_readTimerInt); _readTimerInt=null; } }
+function startReadTimer(){
+  stopReadTimer();
+  _readTimerInt=setInterval(()=>{
+    if(ui.tab!=='read' || ui.read.stage!=='play'){ stopReadTimer(); return; }
+    const el=document.getElementById('readTimer');
+    if(!el){ stopReadTimer(); return; }
+    const sec=Math.floor((Date.now()-(ui.read.startTime||Date.now()))/1000);
+    el.textContent='⏱ '+fmtMMSS(sec);
+  },1000);
+}
 function passageHtml(s){
   const R=ui.read;
   return s.passages.map(p=>{
@@ -969,11 +1174,13 @@ function rReadPlay(){
   const pick=R.answers[R.idx];
   const answered=pick!=null;
   const star=(store.qstats[s.id]||{}).star;
+  const elapsedNow=Math.floor((Date.now()-(R.startTime||Date.now()))/1000);
   return `
   <div class="prog"><i style="width:${Object.keys(R.answers).length/s.questions.length*100}%"></i></div>
   <div class="card">
     <div class="q-head">
       <span class="faint" style="font-variant-numeric:tabular-nums">第 ${R.idx+1} / ${s.questions.length} 題</span>
+      <span id="readTimer" class="faint" style="font-size:12px;font-variant-numeric:tabular-nums" title="本組計時">⏱ ${fmtMMSS(elapsedNow)}</span>
       <span class="tagline"><span class="tag">Part ${s.part}</span>
         <button class="starbtn ${star?'on':''}" data-act="rdStar" data-id="${esc(s.id)}" aria-label="收藏本篇">${star?'★':'☆'}</button></span>
     </div>
@@ -1005,6 +1212,7 @@ function rReadDone(){
       <div class="lbl" style="text-align:center">${esc(s.title||'')}</div>
       <div class="big">${good}<span style="font-size:24px;color:var(--ink-faint)"> / ${total}</span></div>
       <div class="muted">${total?Math.round(good/total*100):0}% 正確率</div>
+      ${R.elapsedFinal!=null?'<div class="faint" style="font-size:13px;margin-top:2px">本組用時 '+Math.floor(R.elapsedFinal/60000)+' 分 '+Math.floor((R.elapsedFinal%60000)/1000)+' 秒／'+total+' 題</div>':''}
     </div>
     <hr class="hr">
     <div class="lbl">逐題回顧</div>
@@ -1217,7 +1425,7 @@ function copyText(t,btn){
 }
 
 const ACTIONS = {
-  nav(d){ ui.tab=d.tab; if(d.tab==='vocab'){ buildVQueue(); } render(); },
+  nav(d){ ui.tab=d.tab; if(d.tab==='vocab'){ buildVQueue(); } window.scrollTo(0,0); render(); },
   /* 總覽 */
   goVocab(){ ui.tab='vocab'; ui.vocab.mode='due'; buildVQueue(); render(); },
   goQuizSmart(){ ui.tab='quiz'; Object.assign(ui.quiz,{stage:'setup',cats:new Set(['all']),count:10,src:'smart'}); startQuiz(); },
@@ -1238,7 +1446,11 @@ const ACTIONS = {
   },
   dlCorrupt(){ if(corruptRaw) downloadJSON(corruptRaw,'toeic850-corrupt','txt'); },
   closeStorageBanner(){ ui.storageBannerClosed=true; render(); },
-  closeBackupReminder(){ ui.backupReminderClosed=true; render(); },
+  closeBackupReminder(){
+    if(!store.meta) store.meta={lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50};
+    store.meta.reminderSnoozedUntil = today()+3;
+    save(); render();
+  },
   impProgDo(d){
     const ta=document.getElementById('bk-ta');
     const raw = ta && ta.value.trim();
@@ -1250,11 +1462,17 @@ const ACTIONS = {
       if(d.mode==='merge'){
         summary = mergeStore(store, incoming);
       }else{
+        const curN = Object.keys(store.vsrs||{}).length;
+        const curM = Object.keys(store.history||{}).length;
+        const ok = confirm('這會清除目前 '+curN+' 筆單字紀錄與 '+curM+' 天練習歷史，確定覆蓋？');
+        if(!ok) return;
         store = incoming;
         const dft=defaults(); for(const k in dft) if(!(k in store)) store[k]=dft[k];
         if(!store.custom.seq) store.custom.seq=1;
         if(!store.custom.reading) store.custom.reading=[];
-        if(!store.meta || typeof store.meta!=='object') store.meta={lastSaved:null,lastBackup:null,answersSinceBackup:0};
+        if(!store.meta || typeof store.meta!=='object') store.meta={lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50};
+        if(store.meta.reminderSnoozedUntil===undefined) store.meta.reminderSnoozedUntil=null;
+        if(!store.meta.dailyCap) store.meta.dailyCap=50;
         summary = '已覆蓋匯入現有紀錄。';
       }
       store.meta.answersSinceBackup = 0;
@@ -1269,6 +1487,11 @@ const ACTIONS = {
   vPrev(){ const n=vBrowseList().length; ui.vocab.browseIdx=(ui.vocab.browseIdx-1+n)%n; ui.vocab.flip=false; render(); },
   vNext(){ const n=vBrowseList().length; ui.vocab.browseIdx=(ui.vocab.browseIdx+1)%n; ui.vocab.flip=false; render(); },
   vRebuild(){ ui.vocab.done=0; buildVQueue(); render(); },
+  vNextBatch(){ ui.vocab.done=0; buildVQueue(); render(); },
+  goDataFresh(){
+    ui.backupShow=true; render();
+    const el=document.getElementById('data-card'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  },
   vStar(d,el){ const s=vsrs(d.id); s.star=!s.star; save(); render(); },
   /* 發音 */
   speakWord(d){ speak(d.text); },
@@ -1334,8 +1557,8 @@ const ACTIONS = {
   /* 閱讀 6・7 */
   rdFilter(d){ ui.read.filter=d.f; render(); },
   rdStar(d){ const s=qstat(d.id); s.star=!s.star; save(); render(); },
-  rdOpen(d){ Object.assign(ui.read,{stage:'play',setId:d.id,idx:0,answers:{}}); render(); },
-  favGoRead(d){ ui.tab='read'; Object.assign(ui.read,{stage:'play',setId:d.id,idx:0,answers:{}}); render(); },
+  rdOpen(d){ Object.assign(ui.read,{stage:'play',setId:d.id,idx:0,answers:{},startTime:Date.now(),elapsedFinal:null}); render(); startReadTimer(); },
+  favGoRead(d){ ui.tab='read'; Object.assign(ui.read,{stage:'play',setId:d.id,idx:0,answers:{},startTime:Date.now(),elapsedFinal:null}); render(); startReadTimer(); },
   goRead(){ ui.tab='read'; ui.read.stage='list'; render(); },
   rdPick(d){
     const R=ui.read, s=rsetById(R.setId); if(!s||R.answers[R.idx]!=null) return;
@@ -1345,9 +1568,13 @@ const ACTIONS = {
     st.a++; ok?st.c++:st.w++; st.lw=!ok;
     markActive(ok); store.meta.answersSinceBackup++; save(); render();
   },
-  rdNext(){ const R=ui.read, s=rsetById(R.setId); R.idx++; if(!s||R.idx>=s.questions.length) R.stage='done'; render(); },
-  rdQuit(){ ui.read.stage='list'; render(); },
-  rdRetry(){ Object.assign(ui.read,{stage:'play',idx:0,answers:{}}); render(); },
+  rdNext(){
+    const R=ui.read, s=rsetById(R.setId); R.idx++;
+    if(!s||R.idx>=s.questions.length){ R.stage='done'; R.elapsedFinal=Date.now()-(R.startTime||Date.now()); stopReadTimer(); }
+    render();
+  },
+  rdQuit(){ stopReadTimer(); ui.read.stage='list'; render(); },
+  rdRetry(){ Object.assign(ui.read,{stage:'play',idx:0,answers:{},startTime:Date.now(),elapsedFinal:null}); render(); startReadTimer(); },
   /* 題庫 */
   impDo(){
     const ta=document.getElementById('imp-ta'); if(!ta||!ta.value.trim()){ ui.bank.msg={type:'err',html:'請先貼上 JSON'}; render(); return; }
@@ -1368,6 +1595,18 @@ const ACTIONS = {
   },
   copyTpl(d,el){ copyText(CLAUDE_PROMPT_TPL,el); },
   delCustom(d){
+    let label;
+    if(d.kind==='q'){
+      const it=store.custom.questions.find(x=>x.id===d.id);
+      label = '文法題「'+(it?String(it.question||'').slice(0,20):d.id)+'…」';
+    }else if(d.kind==='r'){
+      const it=store.custom.reading.find(x=>x.id===d.id);
+      label = '閱讀組「'+(it?(it.title||'').slice(0,20):d.id)+'」';
+    }else{
+      const it=store.custom.vocab.find(x=>x.id===d.id);
+      label = '單字「'+(it?it.word:d.id)+'」';
+    }
+    if(!confirm('確定要刪除'+label+'嗎？此動作無法復原。')) return;
     if(d.kind==='q') store.custom.questions=store.custom.questions.filter(q=>q.id!==d.id);
     else if(d.kind==='r') store.custom.reading=store.custom.reading.filter(s=>s.id!==d.id);
     else store.custom.vocab=store.custom.vocab.filter(w=>w.id!==d.id);
@@ -1427,6 +1666,55 @@ if(_voiceSelEl){
   });
 }
 
+const _rateBtnEl = document.getElementById('ratebtn');
+if(_rateBtnEl){
+  _rateBtnEl.addEventListener('click', ()=>{
+    const cur = _savedRate();
+    const idx = RATE_STEPS.indexOf(cur);
+    const next = RATE_STEPS[(idx+1)%RATE_STEPS.length];
+    try{ localStorage.setItem(RATE_KEY, String(next)); }catch(e){}
+    _updateRateBtn();
+  });
+}
+
+/* 鍵盤快捷鍵：單字卡 Space=翻面／1-3=評分；Part5、閱讀子題 1-4=選選項。
+   一律找到既有按鈕元素後呼叫 .click()，走原本的事件委派 handler，不重寫邏輯；
+   按鈕不存在（例如尚未翻面、已作答被 disabled）時原生就不會有反應。 */
+document.addEventListener('keydown', e=>{
+  const tag = (e.target && e.target.tagName || '').toLowerCase();
+  if(tag==='input' || tag==='textarea' || tag==='select') return;
+  const view = document.getElementById('view');
+  if(!view) return;
+  if(ui.tab==='vocab'){
+    if(e.code==='Space' || e.key===' '){
+      const btn = view.querySelector('[data-act="vFlip"]');
+      if(btn){ e.preventDefault(); btn.click(); }
+      return;
+    }
+    if(e.key==='1'||e.key==='2'||e.key==='3'){
+      const g = e.key==='1'?0:e.key==='2'?1:2;
+      const btn = view.querySelector('[data-act="vGrade"][data-g="'+g+'"]');
+      if(btn){ e.preventDefault(); btn.click(); }
+      return;
+    }
+    return;
+  }
+  if(e.key==='1'||e.key==='2'||e.key==='3'||e.key==='4'){
+    const i = +e.key - 1;
+    const qBtn = view.querySelector('[data-act="qPick"][data-i="'+i+'"]');
+    const rBtn = view.querySelector('[data-act="rdPick"][data-i="'+i+'"]');
+    const btn = qBtn || rBtn;
+    if(btn){ e.preventDefault(); btn.click(); }
+  }
+});
+
 _fillVoiceSel();
+_updateRateBtn();
 render();
+
+if('serviceWorker' in navigator && (location.protocol==='http:'||location.protocol==='https:')){
+  try{
+    navigator.serviceWorker.register('sw.js', {scope:'./'}).catch(function(){});
+  }catch(e){}
+}
 </script>
