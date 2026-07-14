@@ -358,6 +358,7 @@ function save(){
   store.meta.lastSaved = new Date().toISOString();
   try{ localStorage.setItem(LS_KEY, JSON.stringify(store)); storageOK = true; }
   catch(e){ storageOK = false; }
+  if(typeof csSchedulePush==='function') csSchedulePush();
 }
 function today(){ return Math.floor(Date.now()/864e5); }
 
@@ -762,6 +763,9 @@ function rHome(){
     <p class="muted" style="font-size:13.5px;margin:0 0 8px">學習紀錄存在這個瀏覽器的 localStorage。換裝置或怕遺失時，請下載備份檔保存。</p>
     ${isFresh?'<p class="muted" style="font-size:13.5px;margin:0 0 8px">📲 在其他裝置練過？可用下方「匯入紀錄」把備份檔帶進來。</p>':''}
     <p class="faint" id="bk-info" style="font-size:12.5px;margin:0 0 10px">${esc(backupInfoLine())}</p>
+    <hr class="hr">
+    ${csSectionHtml()}
+    <hr class="hr">
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn primary small" data-act="dlBackup">⬇ 下載備份檔</button>
       <button class="btn ghost small" data-act="expProg">複製到剪貼簿</button>
@@ -1621,6 +1625,54 @@ const ACTIONS = {
     else store.custom.vocab=store.custom.vocab.filter(w=>w.id!==d.id);
     save(); render();
   },
+  /* 雲端同步 */
+  csSendLink(){
+    const emailEl = document.getElementById('cs-email');
+    const email = emailEl ? emailEl.value.trim() : '';
+    CS.emailInput = email;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      CS.msg = {type:'err', text:'請輸入有效的電子郵件地址'};
+      render();
+      return;
+    }
+    CS.sending = true;
+    CS.msg = null;
+    render();
+    window.fetch(SB_URL+'/auth/v1/otp?redirect_to='+encodeURIComponent(location.origin+location.pathname), {
+      method:'POST',
+      headers:{ 'apikey':SB_KEY, 'Content-Type':'application/json' },
+      body: JSON.stringify({email:email, create_user:true}),
+    }).then(res=>{
+      CS.sending = false;
+      if(res.status===429){ CS.msg={type:'err',text:'寄送太頻繁，請稍後再試'}; render(); return; }
+      if(!res.ok){ CS.msg={type:'err',text:'寄送失敗，請確認信箱格式是否正確'}; render(); return; }
+      CS.msg = {type:'ok', text:'已寄出！請到信箱點「Sign in」連結（在要同步的這台裝置上開啟）'};
+      CS.cooldownUntil = Date.now()+60000;
+      render();
+      csStartCooldownTicker();
+    }).catch(()=>{
+      CS.sending = false;
+      if(navigator.onLine===false){ CS.msg={type:'err',text:'目前離線，請確認網路連線後再試'}; }
+      else{ CS.envBlocked = true; CS.msg=null; }
+      render();
+    });
+  },
+  csSyncNow(){
+    if(!CS.session) return;
+    csPullAndMerge();
+  },
+  csLogout(){
+    const token = CS.session && CS.session.access_token;
+    csClearSession();
+    CS.msg = null; CS.lastSyncAt = null; CS.lastSyncStatus = null;
+    render();
+    if(token){
+      window.fetch(SB_URL+'/auth/v1/logout', {
+        method:'POST',
+        headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+token },
+      }).catch(()=>{});
+    }
+  },
 };
 
 function startQuiz(){
@@ -1733,6 +1785,251 @@ if(typeof window!=='undefined' && window.matchMedia){
   }
 }
 
+/* ── 雲端同步 ──
+   Email 魔術連結登入 + study_state 表雙向同步。全部走原生 fetch（無 SDK）。
+   任何雲端動作失敗一律靜默（不彈錯、不丟 uncaught error），離線體驗與純本機版完全相同。
+   宣告放在最初的 render() 呼叫之前：render()→rHome()→csSectionHtml() 每次都會讀取 CS，
+   若宣告放在 render() 之後會落入 TDZ 造成 ReferenceError。csInit() 的實際呼叫仍留在
+   render() 與 Service Worker 註冊之後執行，確保不阻塞首次畫面渲染。 */
+const SB_URL = 'https://rgieomgmprzmuxrvlogg.supabase.co';
+const SB_KEY = 'sb_publishable_rW-hFWaMYsyJv3-Cc9UK6Q_NomZjlo1';
+const CS_SESSION_KEY = 'toeic850_sb_session';
+
+let CS = {
+  session: null,        // {access_token, refresh_token, expires_at(epoch秒), email, uid}
+  emailInput: '',
+  sending: false,
+  cooldownUntil: 0,
+  msg: null,             // {type:'ok'|'err', text}
+  syncing: false,
+  lastSyncAt: null,      // epoch ms
+  lastSyncStatus: null,  // 'ok' | 'fail' | 'offline' | null
+  envBlocked: false,     // fetch 對 SB_URL 完全被環境（例如 CSP）擋掉
+};
+
+function csDecodeJwt(token){
+  try{
+    const part = String(token||'').split('.')[1];
+    if(!part) return {};
+    const b64 = part.replace(/-/g,'+').replace(/_/g,'/');
+    const pad = b64.length%4 ? '='.repeat(4-b64.length%4) : '';
+    const json = decodeURIComponent(atob(b64+pad).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(json);
+  }catch(e){ return {}; }
+}
+function csLoadSession(){
+  try{
+    const raw = localStorage.getItem(CS_SESSION_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !s.access_token || !s.refresh_token) return null;
+    return s;
+  }catch(e){ return null; }
+}
+function csSaveSession(s){ try{ localStorage.setItem(CS_SESSION_KEY, JSON.stringify(s)); }catch(e){} }
+function csClearSession(){ try{ localStorage.removeItem(CS_SESSION_KEY); }catch(e){} CS.session = null; }
+function csBuildSession(tokenResp){
+  const payload = csDecodeJwt(tokenResp.access_token);
+  const expiresIn = parseInt(tokenResp.expires_in,10);
+  return {
+    access_token: tokenResp.access_token,
+    refresh_token: tokenResp.refresh_token,
+    expires_at: Math.floor(Date.now()/1000) + (isNaN(expiresIn)?3600:expiresIn),
+    email: payload.email||'',
+    uid: payload.sub||'',
+  };
+}
+function csNoteNetError(){ if(navigator.onLine!==false) CS.envBlocked = true; }
+
+/* 從 URL hash 解析魔術連結回跳帶回的 token（不經過任何 API） */
+function csParseHash(){
+  if(!location.hash || location.hash.indexOf('access_token')===-1) return null;
+  const params = new URLSearchParams(location.hash.slice(1));
+  const at = params.get('access_token'), rt = params.get('refresh_token');
+  if(!at || !rt) return null;
+  const payload = csDecodeJwt(at);
+  const expiresIn = parseInt(params.get('expires_in'),10);
+  return {
+    access_token: at, refresh_token: rt,
+    expires_at: Math.floor(Date.now()/1000) + (isNaN(expiresIn)?3600:expiresIn),
+    email: payload.email||'', uid: payload.sub||'',
+  };
+}
+
+/* 換發 token：剩餘壽命<120秒時呼叫。401/400＝refresh token 失效才清除 session；
+   其餘（離線／伺服器錯誤）保留 session，僅本次操作視為失敗，不彈錯。 */
+async function csRefresh(){
+  if(!CS.session || !CS.session.refresh_token) return false;
+  let res;
+  try{
+    res = await window.fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token', {
+      method:'POST',
+      headers:{ 'apikey':SB_KEY, 'Content-Type':'application/json' },
+      body: JSON.stringify({refresh_token: CS.session.refresh_token}),
+    });
+  }catch(e){ csNoteNetError(); return false; }
+  if(res.status===400 || res.status===401){ csClearSession(); return false; }
+  if(!res.ok) return false;
+  try{
+    const data = await res.json();
+    if(!data.access_token || !data.refresh_token) return false;
+    CS.session = csBuildSession(data);
+    csSaveSession(CS.session);
+    return true;
+  }catch(e){ return false; }
+}
+async function csEnsureFreshToken(){
+  if(!CS.session) return false;
+  const remain = CS.session.expires_at - Math.floor(Date.now()/1000);
+  if(remain < 120) return await csRefresh();
+  return true;
+}
+
+function csFmtHM(ts){
+  const d = new Date(ts);
+  const p = n=>String(n).padStart(2,'0');
+  return p(d.getHours())+':'+p(d.getMinutes());
+}
+
+/* 下載雲端紀錄並用既有 mergeStore() 併入本地，再把合併結果推回雲端 */
+async function csPullAndMerge(){
+  if(!CS.session || CS.syncing) return;
+  CS.syncing = true;
+  render();
+  try{
+    const ok = await csEnsureFreshToken();
+    if(!ok || !CS.session){ CS.lastSyncStatus='fail'; CS.lastSyncAt=Date.now(); CS.syncing=false; render(); return; }
+    let res;
+    try{
+      res = await window.fetch(SB_URL+'/rest/v1/study_state?select=store,updated_at', {
+        headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+CS.session.access_token },
+      });
+    }catch(e){ csNoteNetError(); throw e; }
+    if(!res.ok) throw new Error('pull failed '+res.status);
+    const rows = await res.json();
+    if(Array.isArray(rows) && rows.length && rows[0] && rows[0].store){
+      mergeStore(store, rows[0].store);
+      save();
+    }
+    await csPush(false, true /* skipEnsure：token 剛驗證過；push 內部會設定 lastSyncAt/lastSyncStatus 並 render() */);
+  }catch(e){
+    CS.lastSyncStatus = (navigator.onLine===false) ? 'offline' : 'fail';
+    CS.lastSyncAt = Date.now();
+  }
+  CS.syncing = false;
+  render();
+}
+
+/* push：debounce 4 秒（由 save() 末尾掛勾觸發）；hidden 時由 visibilitychange 立即 flush */
+let _csPushTimer = null;
+function csSchedulePush(){
+  if(!CS.session) return;
+  clearTimeout(_csPushTimer);
+  _csPushTimer = setTimeout(()=>{ csPush(false); }, 4000);
+}
+async function csPush(useKeepalive, skipEnsure){
+  if(!CS.session) return;
+  try{
+    if(!skipEnsure){
+      const ok = await csEnsureFreshToken();
+      if(!ok || !CS.session){ CS.lastSyncStatus='fail'; CS.lastSyncAt=Date.now(); render(); return; }
+    }
+    let res;
+    try{
+      res = await window.fetch(SB_URL+'/rest/v1/study_state', {
+        method:'POST',
+        headers:{
+          'apikey':SB_KEY,
+          'Authorization':'Bearer '+CS.session.access_token,
+          'Content-Type':'application/json',
+          'Prefer':'resolution=merge-duplicates,return=minimal',
+        },
+        body: JSON.stringify([{ user_id: CS.session.uid, store: store, updated_at: new Date().toISOString() }]),
+        keepalive: !!useKeepalive,
+      });
+    }catch(e){ csNoteNetError(); throw e; }
+    if(!res.ok) throw new Error('push failed '+res.status);
+    CS.lastSyncStatus = 'ok';
+  }catch(e){
+    CS.lastSyncStatus = (navigator.onLine===false) ? 'offline' : 'fail';
+  }
+  CS.lastSyncAt = Date.now();
+  render();
+}
+
+/* 寄送登入連結後的 60 秒倒數：只更新按鈕文字，不觸發整頁 render()（比照閱讀計時器做法） */
+let _csCooldownInt = null;
+function csStartCooldownTicker(){
+  if(_csCooldownInt) clearInterval(_csCooldownInt);
+  _csCooldownInt = setInterval(()=>{
+    const left = Math.ceil((CS.cooldownUntil - Date.now())/1000);
+    const btn = document.getElementById('cs-send-btn');
+    if(!btn){ clearInterval(_csCooldownInt); _csCooldownInt=null; return; }
+    if(left<=0){
+      clearInterval(_csCooldownInt); _csCooldownInt=null;
+      btn.disabled=false; btn.textContent='寄送登入連結';
+      return;
+    }
+    btn.textContent = '已寄出（'+left+'s）';
+  }, 1000);
+}
+
+/* 總覽「資料」卡片內、備份區上方的雲端同步小節 */
+function csSectionHtml(){
+  const S = CS;
+  if(S.envBlocked){
+    return '<div style="margin:14px 0"><div class="lbl">☁️ 雲端同步</div>'
+      +'<p class="muted" style="font-size:13.5px;margin:0">此環境無法連線雲端，請用正式網址開啟</p></div>';
+  }
+  let body;
+  if(S.session){
+    const statusText = S.syncing ? '同步中…'
+      : (S.lastSyncAt ? ('上次同步：'+csFmtHM(S.lastSyncAt)+'（'+(S.lastSyncStatus==='ok'?'✓成功':S.lastSyncStatus==='offline'?'離線':'✗失敗')+'）')
+      : '尚未同步');
+    body = ''
+      +'<div style="font-size:14px;margin-bottom:6px">已登入 <b>'+esc(S.session.email||'')+'</b></div>'
+      +'<div class="faint" style="font-size:12.5px;margin-bottom:10px">'+esc(statusText)+'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn ghost small" data-act="csSyncNow"'+(S.syncing?' disabled':'')+'>立即同步</button>'
+      +'<button class="btn ghost small" data-act="csLogout">登出</button>'
+      +'</div>';
+  }else{
+    const cooldownLeft = Math.max(0, Math.ceil((S.cooldownUntil-Date.now())/1000));
+    const btnDisabled = S.sending || cooldownLeft>0;
+    const btnText = cooldownLeft>0 ? ('已寄出（'+cooldownLeft+'s）') : '寄送登入連結';
+    body = ''
+      +'<p class="muted" style="font-size:13.5px;margin:0 0 8px">登入後，練習紀錄會自動在你的裝置間同步。</p>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+      +'<input type="email" id="cs-email" placeholder="you@example.com" value="'+esc(S.emailInput||'')+'" style="flex:1;min-width:180px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px">'
+      +'<button class="btn primary small" id="cs-send-btn" data-act="csSendLink"'+(btnDisabled?' disabled':'')+'>'+esc(btnText)+'</button>'
+      +'</div>'
+      +(S.msg ? ('<div class="imp-msg '+(S.msg.type==='ok'?'ok':'err')+'" style="margin-top:8px">'+esc(S.msg.text)+'</div>') : '');
+  }
+  return '<div style="margin:14px 0"><div class="lbl">☁️ 雲端同步</div>'+body+'</div>';
+}
+
+/* 啟動流程：絕不阻塞既有 UI 渲染（render() 已在上方同步呼叫過），全程 async 背景執行 */
+async function csInit(){
+  CS.session = csLoadSession();
+  const fromHash = csParseHash();
+  if(fromHash){
+    CS.session = fromHash;
+    csSaveSession(CS.session);
+    history.replaceState(null, '', location.pathname+location.search);
+    showToast('☁️ 雲端登入成功');
+    render();
+    await csPullAndMerge();
+    return;
+  }
+  if(!CS.session) return;
+  const remain = CS.session.expires_at - Math.floor(Date.now()/1000);
+  if(remain < 120){
+    const ok = await csRefresh();
+    if(!ok || !CS.session){ render(); return; }
+  }
+  await csPullAndMerge();
+}
+
 _fillVoiceSel();
 _updateRateBtn();
 render();
@@ -1742,4 +2039,13 @@ if('serviceWorker' in navigator && (location.protocol==='http:'||location.protoc
     navigator.serviceWorker.register('sw.js', {scope:'./'}).catch(function(){});
   }catch(e){}
 }
+
+window.addEventListener('online', ()=>{ if(CS.session) csPullAndMerge(); });
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='hidden' && CS.session){
+    clearTimeout(_csPushTimer);
+    csPush(true);
+  }
+});
+csInit();
 </script>

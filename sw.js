@@ -31,6 +31,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // 只處理同源請求；跨網域（例如 Supabase 雲端同步）一律交給瀏覽器原生處理，不攔截、不快取。
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(event.request)
