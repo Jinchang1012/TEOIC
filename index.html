@@ -39,6 +39,15 @@ button:focus-visible,textarea:focus-visible,details summary:focus-visible{outlin
 .score-chip .now{font-size:22px;font-weight:800;color:var(--pine)}
 .score-chip .goal{font-size:14px;color:var(--ink-soft)}
 
+/* ── 雲端同步狀態 chip（masthead 常駐）── */
+.cs-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:12.5px;font-weight:600;color:var(--ink-soft);white-space:nowrap;cursor:pointer}
+.cs-chip:hover{border-color:var(--pine-mid)}
+.cs-chip-ic{font-size:13px;line-height:1}
+.cs-chip.cs-ok{background:var(--pine-tint);border-color:var(--pine-tint-line);color:var(--pine-deep)}
+.cs-chip.cs-fail{background:var(--clay-tint);border-color:var(--clay-line);color:var(--clay)}
+.cs-chip.cs-busy{background:var(--brass-tint);border-color:var(--brass-line);color:var(--brass)}
+.cs-chip.cs-offline,.cs-chip.cs-out{color:var(--ink-faint)}
+
 /* ── 分頁 ── */
 .tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;margin-bottom:18px;overflow-x:auto}
 .tabs button{flex:1;padding:10px 8px;border-radius:999px;font-size:14px;font-weight:600;color:var(--ink-soft);white-space:nowrap;min-width:64px}
@@ -224,6 +233,8 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
   .masthead h1{font-size:22px}
   .voicesel{max-width:120px;font-size:12.5px}
   #ratebtn{width:auto;min-width:0;min-height:36px;padding:6px 10px;font-size:12px;flex:none}
+  .cs-chip{padding:7px;gap:0}
+  .cs-chip-tx{display:none}
 
   /* 底部導覽（App 風格 tab bar）*/
   .tabs{
@@ -278,6 +289,7 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
       <h1>訓練場</h1>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <span id="cs-chip-slot"></span>
       <select id="voicesel" class="voicesel"></select>
       <button id="ratebtn" type="button" class="btn ghost small" title="語速（點擊切換：慢／正常／快）"></button>
     </div>
@@ -602,11 +614,14 @@ const TABS = [
 function renderGlobalBanner(){
   const gb=document.getElementById('globalBanner');
   if(!gb) return;
+  let html='';
   if(!storageOK && !ui.storageBannerClosed){
-    gb.innerHTML = '<div class="gbanner err">⚠️ 此環境無法保存學習紀錄——關閉頁面後進度會消失。練習後請到「總覽→資料」下載備份檔，下次開啟時匯入還原。<button class="x" data-act="closeStorageBanner" aria-label="關閉">✕</button></div>';
-  }else{
-    gb.innerHTML = '';
+    html += '<div class="gbanner err">⚠️ 此環境無法保存學習紀錄——關閉頁面後進度會消失。練習後請到「總覽→資料」下載備份檔，下次開啟時匯入還原。<button class="x" data-act="closeStorageBanner" aria-label="關閉">✕</button></div>';
   }
+  if(typeof CS!=='undefined' && CS.banner){
+    html += '<div class="gbanner err">⚠️ '+esc(CS.banner.text)+'<button class="x" data-act="closeCsBanner" aria-label="關閉">✕</button></div>';
+  }
+  gb.innerHTML = html;
 }
 /* 手機底部固定導覽列（#tabs）防遮蓋機制。
    分兩步，任何內容高度都成立：
@@ -651,6 +666,7 @@ window.addEventListener('orientationchange', ()=>{ syncTabsSafeArea(); ensureBot
 
 function render(){
   renderGlobalBanner();
+  renderCsChip();
   const dueN = allV().filter(w=>{const s=store.vsrs[w.id]; return !s || s.due<=today();}).length;
   document.getElementById('tabs').innerHTML = TABS.map(t=>{
     const badge = (t.key==='vocab' && dueN>0) ? '<span class="n">'+dueN+'</span>' : '';
@@ -1626,6 +1642,12 @@ const ACTIONS = {
     save(); render();
   },
   /* 雲端同步 */
+  csGoogleLogin,
+  closeCsBanner(){ CS.banner=null; render(); },
+  csChipClick(){
+    ui.tab='home'; render();
+    const el=document.getElementById('data-card'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  },
   csSendLink(){
     const emailEl = document.getElementById('cs-email');
     const email = emailEl ? emailEl.value.trim() : '';
@@ -1664,7 +1686,8 @@ const ACTIONS = {
   csLogout(){
     const token = CS.session && CS.session.access_token;
     csClearSession();
-    CS.msg = null; CS.lastSyncAt = null; CS.lastSyncStatus = null;
+    CS.msg = null; CS.lastSyncAt = null; CS.lastSyncStatus = null; CS.banner = null;
+    CS.pulledOnce = false; CS.cloudHadData = false;
     render();
     if(token){
       window.fetch(SB_URL+'/auth/v1/logout', {
@@ -1701,6 +1724,16 @@ document.addEventListener('click',e=>{
   if(el.dataset.act==='vStar'||el.dataset.act==='qStar'||el.dataset.act==='speakWord'||el.dataset.act==='speakEx'||el.dataset.act==='speakQ') e.stopPropagation();
   const fn=ACTIONS[el.dataset.act];
   if(fn){ e.preventDefault(); fn(el.dataset,el); }
+},true);
+
+/* 鍵盤觸發：<span role="button">（如 masthead 的 cs-chip）不是原生 button，
+   瀏覽器不會把 Enter/Space 轉成 click，這裡補上等效行為（走同一個 ACTIONS 分派） */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter' && e.key!==' ' && e.key!=='Spacebar') return;
+  const el=e.target.closest('[data-act][role="button"]');
+  if(!el || el.tagName==='BUTTON') return;
+  const fn=ACTIONS[el.dataset.act];
+  if(fn){ e.preventDefault(); e.stopPropagation(); fn(el.dataset,el); } // stopPropagation：避免下方全域快捷鍵（Space=翻面）重複處理
 },true);
 
 /* 匯入紀錄：檔案選取（讀入後填入 textarea，沿用同一個解析器按鈕） */
@@ -1805,6 +1838,9 @@ let CS = {
   lastSyncAt: null,      // epoch ms
   lastSyncStatus: null,  // 'ok' | 'fail' | 'offline' | null
   envBlocked: false,     // fetch 對 SB_URL 完全被環境（例如 CSP）擋掉
+  banner: null,          // {text} 登入/同步錯誤橫幅（globalBanner 內第二格，見 renderGlobalBanner）
+  pulledOnce: false,     // 本頁面是否已成功完成一次 pull（HTTP 200）；push 閘門依此判斷
+  cloudHadData: false,   // 本頁面 pull 是否曾看到雲端非空資料列；csPush 最後防線依此判斷
 };
 
 function csDecodeJwt(token){
@@ -1868,7 +1904,7 @@ async function csRefresh(){
       body: JSON.stringify({refresh_token: CS.session.refresh_token}),
     });
   }catch(e){ csNoteNetError(); return false; }
-  if(res.status===400 || res.status===401){ csClearSession(); return false; }
+  if(res.status===400 || res.status===401){ csClearSession(); CS.banner={text:'登入已過期，請重新登入'}; render(); return false; }
   if(!res.ok) return false;
   try{
     const data = await res.json();
@@ -1891,14 +1927,48 @@ function csFmtHM(ts){
   return p(d.getHours())+':'+p(d.getMinutes());
 }
 
-/* 下載雲端紀錄並用既有 mergeStore() 併入本地，再把合併結果推回雲端 */
+/* 本地 store 是否有「有意義」的學習紀錄：qstats 累計作答數＋vsrs 已看字數＋
+   history 天數＋custom 自訂條目數，總和 > 0。用於同步防呆（見 csPullAndMerge／csPush）。
+   欄位名對齊 defaults()（qstats[id].a、vsrs[id].seen）與 mergeStore()。 */
+function csStoreIsMeaningful(s){
+  if(!s || typeof s!=='object') return false;
+  let total = 0;
+  const qs = s.qstats||{};
+  for(const id in qs) total += (qs[id] && qs[id].a) || 0;
+  const vs = s.vsrs||{};
+  for(const id in vs) if(vs[id] && vs[id].seen>0) total++;
+  total += Object.keys(s.history||{}).length;
+  const c = s.custom||{};
+  total += (c.questions||[]).length + (c.vocab||[]).length + (c.reading||[]).length;
+  return total>0;
+}
+
+/* 同步狀態 chip 的唯一寫入口：push/pull/refresh/連線事件一律經這裡更新
+   syncing/lastSyncStatus/lastSyncAt 並觸發 render()，避免散落各處各自 render()。 */
+function csSetStatus(state){
+  CS.syncing = (state==='syncing');
+  if(state==='ok' || state==='fail' || state==='offline'){
+    CS.lastSyncStatus = state;
+    CS.lastSyncAt = Date.now();
+  }
+  render();
+}
+
+/* 下載雲端紀錄並用既有 mergeStore() 併入本地，再把合併結果推回雲端。
+   三情境防呆（見 登入改版規劃-20260716.md §4.2／§C）：
+   1) 非 200／網路錯誤 → 只顯示失敗，不 merge、不 push，pulledOnce 維持 false（push 閘門持續關閉）。
+   2) 200 且有資料列 → 併入本地→save→push（mergeStore 冪等，安全）。
+   3) 200 且無資料列 → 本地有意義才視為首次上傳去 push；本地也空就什麼都不做。 */
 async function csPullAndMerge(){
   if(!CS.session || CS.syncing) return;
-  CS.syncing = true;
-  render();
+  csSetStatus('syncing');
   try{
     const ok = await csEnsureFreshToken();
-    if(!ok || !CS.session){ CS.lastSyncStatus='fail'; CS.lastSyncAt=Date.now(); CS.syncing=false; render(); return; }
+    if(!ok || !CS.session){
+      if(CS.session){ CS.banner={text:'雲端同步失敗，稍後會自動重試'}; } // session 仍在＝非 401/400，csRefresh 未自行顯示橫幅
+      csSetStatus('fail');
+      return;
+    }
     let res;
     try{
       res = await window.fetch(SB_URL+'/rest/v1/study_state?select=store,updated_at', {
@@ -1908,19 +1978,30 @@ async function csPullAndMerge(){
     if(!res.ok) throw new Error('pull failed '+res.status);
     const rows = await res.json();
     if(Array.isArray(rows) && rows.length && rows[0] && rows[0].store){
+      CS.cloudHadData = true;
+      CS.pulledOnce = true;
       mergeStore(store, rows[0].store);
       save();
+      await csPush(false, true /* skipEnsure：token 剛驗證過；push 內部會設定狀態並 render() */);
+    }else{
+      CS.pulledOnce = true;
+      if(csStoreIsMeaningful(store)){
+        await csPush(false, true);
+      }else{
+        csSetStatus('ok');
+      }
     }
-    await csPush(false, true /* skipEnsure：token 剛驗證過；push 內部會設定 lastSyncAt/lastSyncStatus 並 render() */);
   }catch(e){
-    CS.lastSyncStatus = (navigator.onLine===false) ? 'offline' : 'fail';
-    CS.lastSyncAt = Date.now();
+    if(navigator.onLine===false){ csSetStatus('offline'); }
+    else{ CS.banner={text:'雲端同步失敗'}; csSetStatus('fail'); }
+    // pulledOnce 刻意不變動：非 200／網路錯誤時維持 false，push 閘門持續關閉
   }
-  CS.syncing = false;
-  render();
 }
 
-/* push：debounce 4 秒（由 save() 末尾掛勾觸發）；hidden 時由 visibilitychange 立即 flush */
+/* push：debounce 4 秒（由 save() 末尾掛勾觸發）；hidden 時由 visibilitychange 立即 flush。
+   兩道防呆閘門（見 §4.2／§C）：
+   a) pulledOnce 為 false（本頁尚未成功 pull 過一次）一律直接return，不排隊不報錯，僅 console.warn。
+   b) 待推 store 不 meaningful、且本頁曾 pull 到非空雲端資料 → 拒推＋橫幅警告（防禦縱深）。 */
 let _csPushTimer = null;
 function csSchedulePush(){
   if(!CS.session) return;
@@ -1929,10 +2010,21 @@ function csSchedulePush(){
 }
 async function csPush(useKeepalive, skipEnsure){
   if(!CS.session) return;
+  if(!CS.pulledOnce){ console.warn('[cs] push blocked: 本頁尚未成功完成一次 pull'); return; }
+  if(!csStoreIsMeaningful(store) && CS.cloudHadData){
+    CS.banner = {text:'偵測到本機紀錄為空、雲端有資料，已阻止覆蓋——請先按立即同步拉回雲端紀錄'};
+    csSetStatus('fail');
+    return;
+  }
+  csSetStatus('syncing');
   try{
     if(!skipEnsure){
       const ok = await csEnsureFreshToken();
-      if(!ok || !CS.session){ CS.lastSyncStatus='fail'; CS.lastSyncAt=Date.now(); render(); return; }
+      if(!ok || !CS.session){
+        if(CS.session){ CS.banner={text:'雲端同步失敗，稍後會自動重試'}; }
+        csSetStatus('fail');
+        return;
+      }
     }
     let res;
     try{
@@ -1949,12 +2041,11 @@ async function csPush(useKeepalive, skipEnsure){
       });
     }catch(e){ csNoteNetError(); throw e; }
     if(!res.ok) throw new Error('push failed '+res.status);
-    CS.lastSyncStatus = 'ok';
+    csSetStatus('ok');
   }catch(e){
-    CS.lastSyncStatus = (navigator.onLine===false) ? 'offline' : 'fail';
+    if(navigator.onLine===false){ csSetStatus('offline'); }
+    else{ CS.banner={text:'雲端同步失敗，稍後會自動重試'}; csSetStatus('fail'); }
   }
-  CS.lastSyncAt = Date.now();
-  render();
 }
 
 /* 寄送登入連結後的 60 秒倒數：只更新按鈕文字，不觸發整頁 render()（比照閱讀計時器做法） */
@@ -1972,6 +2063,38 @@ function csStartCooldownTicker(){
     }
     btn.textContent = '已寄出（'+left+'s）';
   }, 1000);
+}
+
+/* Google 登入是否該隱藏：APK WebView 內 Google 會封鎖 OAuth（偵測 UA 含 '; wv' 或
+   tts-shim.js 注入的 window.AndroidTTS 橋接物件存在），file:// 開啟時 OAuth redirect 也回不來。 */
+function csGoogleLoginBlocked(){
+  if(location.protocol==='file:') return true;
+  if(typeof window!=='undefined' && window.AndroidTTS) return true;
+  if(String(navigator.userAgent||'').indexOf('; wv')!==-1) return true;
+  return false;
+}
+function csGoogleLogin(){
+  location.href = SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+location.pathname);
+}
+
+/* masthead 常駐同步狀態 chip：狀態全部由 CS 既有欄位＋navigator.onLine 即時推導，
+   不另存一份重複狀態，避免跟 csSetStatus() 寫入的來源不同步。 */
+function csChipInfo(){
+  if(!CS.session) return {cls:'out', ic:'○', text:'未登入'};
+  if(CS.syncing) return {cls:'busy', ic:'⟳', text:'同步中…'};
+  if(navigator.onLine===false || CS.lastSyncStatus==='offline') return {cls:'offline', ic:'📴', text:'離線'};
+  if(CS.lastSyncStatus==='fail') return {cls:'fail', ic:'⚠', text:'同步失敗'};
+  if(CS.lastSyncStatus==='ok' && CS.lastSyncAt) return {cls:'ok', ic:'☁', text:'已同步 '+csFmtHM(CS.lastSyncAt)};
+  return {cls:'out', ic:'○', text:'待同步'};
+}
+function csChipHtml(){
+  if(CS.envBlocked) return '';
+  const info = csChipInfo();
+  return '<span role="button" tabindex="0" class="cs-chip cs-'+info.cls+'" data-act="csChipClick" title="同步狀態：'+esc(info.text)+'，點擊查看資料"><span class="cs-chip-ic">'+info.ic+'</span><span class="cs-chip-tx">'+esc(info.text)+'</span></span>';
+}
+function renderCsChip(){
+  const el = document.getElementById('cs-chip-slot');
+  if(el) el.innerHTML = csChipHtml();
 }
 
 /* 總覽「資料」卡片內、備份區上方的雲端同步小節 */
@@ -1997,35 +2120,53 @@ function csSectionHtml(){
     const cooldownLeft = Math.max(0, Math.ceil((S.cooldownUntil-Date.now())/1000));
     const btnDisabled = S.sending || cooldownLeft>0;
     const btnText = cooldownLeft>0 ? ('已寄出（'+cooldownLeft+'s）') : '寄送登入連結';
+    const googleBtn = csGoogleLoginBlocked()
+      ? '<p class="muted" style="font-size:12.5px;margin:0 0 10px">Google 登入僅網頁版提供</p>'
+      : '<button class="btn primary" style="width:100%;justify-content:center;margin-bottom:10px" data-act="csGoogleLogin">使用 Google 登入</button>';
     body = ''
-      +'<p class="muted" style="font-size:13.5px;margin:0 0 8px">登入後，練習紀錄會自動在你的裝置間同步。</p>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+      +'<p class="muted" style="font-size:13.5px;margin:0 0 10px">登入後，練習紀錄會自動在你的裝置間同步。</p>'
+      +googleBtn
+      +'<details><summary style="cursor:pointer;font-size:13px;color:var(--ink-soft)">改用 Email 連結登入（備援）</summary>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">'
       +'<input type="email" id="cs-email" placeholder="you@example.com" value="'+esc(S.emailInput||'')+'" style="flex:1;min-width:180px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-size:14px">'
-      +'<button class="btn primary small" id="cs-send-btn" data-act="csSendLink"'+(btnDisabled?' disabled':'')+'>'+esc(btnText)+'</button>'
+      +'<button class="btn ghost small" id="cs-send-btn" data-act="csSendLink"'+(btnDisabled?' disabled':'')+'>'+esc(btnText)+'</button>'
       +'</div>'
-      +(S.msg ? ('<div class="imp-msg '+(S.msg.type==='ok'?'ok':'err')+'" style="margin-top:8px">'+esc(S.msg.text)+'</div>') : '');
+      +(S.msg ? ('<div class="imp-msg '+(S.msg.type==='ok'?'ok':'err')+'" style="margin-top:8px">'+esc(S.msg.text)+'</div>') : '')
+      +'</details>';
   }
   return '<div style="margin:14px 0"><div class="lbl">☁️ 雲端同步</div>'+body+'</div>';
 }
 
-/* 啟動流程：絕不阻塞既有 UI 渲染（render() 已在上方同步呼叫過），全程 async 背景執行 */
+/* 啟動流程：絕不阻塞既有 UI 渲染（render() 已在上方同步呼叫過），全程 async 背景執行。
+   hash 帶 access_token（Google OAuth 與 Email 魔術連結回跳格式相同）或帶 error= 時，
+   一律解析完立刻 history.replaceState 清掉 hash；建不成 session 一律顯性橫幅，禁止靜默 return。 */
 async function csInit(){
   CS.session = csLoadSession();
-  const fromHash = csParseHash();
-  if(fromHash){
-    CS.session = fromHash;
-    csSaveSession(CS.session);
+  const rawHash = location.hash || '';
+  const hashLooksAuth = rawHash.indexOf('access_token')!==-1 || rawHash.indexOf('error=')!==-1;
+  if(hashLooksAuth){
+    const fromHash = csParseHash();
     history.replaceState(null, '', location.pathname+location.search);
-    showToast('☁️ 雲端登入成功');
+    if(fromHash){
+      CS.session = fromHash;
+      csSaveSession(CS.session);
+      showToast('☁️ 雲端登入成功');
+      render();
+      await csPullAndMerge();
+      return;
+    }
+    CS.banner = {text:'登入連結無效或已過期，請改用 Google 登入或重寄連結'};
     render();
-    await csPullAndMerge();
-    return;
   }
   if(!CS.session) return;
   const remain = CS.session.expires_at - Math.floor(Date.now()/1000);
   if(remain < 120){
     const ok = await csRefresh();
-    if(!ok || !CS.session){ render(); return; }
+    if(!ok || !CS.session){
+      if(CS.session){ CS.banner={text:'雲端同步失敗，稍後會自動重試'}; } // 仍有 session＝非 401/400，csRefresh 未自行顯示橫幅
+      render();
+      return;
+    }
   }
   await csPullAndMerge();
 }
@@ -2041,6 +2182,7 @@ if('serviceWorker' in navigator && (location.protocol==='http:'||location.protoc
 }
 
 window.addEventListener('online', ()=>{ if(CS.session) csPullAndMerge(); });
+window.addEventListener('offline', ()=>{ if(CS.session) csSetStatus('offline'); });
 document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState==='hidden' && CS.session){
     clearTimeout(_csPushTimer);
