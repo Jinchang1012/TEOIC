@@ -1,0 +1,850 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F4EE">
+<title>法文訓練場</title>
+<style>
+:root{
+  --paper:#F5F4EE; --card:#FFFFFF; --line:#E3E1D4; --line-soft:#EDEBDF;
+  --ink:#1C2B23; --ink-soft:#5C6B60; --ink-faint:#939C92;
+  --pine:#24513B; --pine-deep:#16352A; --pine-tint:#E9F0E9; --pine-mid:#3E7157;
+  --brass:#A87B24; --brass-tint:#F7F0DC; --brass-line:#E3D5AC;
+  --clay:#B0492A; --clay-tint:#F8EAE3; --clay-line:#E5C4B4;
+  --radius:14px;
+  --sans:"Segoe UI","Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
+button:focus-visible,textarea:focus-visible,details summary:focus-visible{outline:2px solid var(--pine);outline-offset:2px;border-radius:6px}
+#app{max-width:760px;margin:0 auto;padding:22px 16px 90px}
+
+/* ── 頂部 ── */
+.masthead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--ink-faint);font-weight:600}
+.masthead h1{margin:2px 0 0;font-size:32px;font-weight:800;letter-spacing:.01em}
+
+/* ── 分頁 ── */
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;margin-bottom:18px;overflow-x:auto}
+.tabs button{flex:1;padding:10px 8px;border-radius:999px;font-size:14px;font-weight:600;color:var(--ink-soft);white-space:nowrap;min-width:64px}
+.tabs button.on{background:var(--pine-deep);color:#fff}
+.tabs button .n{display:inline-block;margin-left:4px;font-size:11px;font-variant-numeric:tabular-nums;opacity:.75}
+.tabs button .tab-ic{display:none}
+.tabs button .tab-tx{display:inline}
+
+/* ── 通用 ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+.lbl{font-size:12px;letter-spacing:.26em;color:var(--ink-faint);font-weight:700;margin-bottom:8px}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px}
+.fchip{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;color:var(--ink-soft)}
+.fchip.on{background:var(--pine);border-color:var(--pine);color:#fff;font-weight:600}
+.voicesel{padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;color:var(--ink-soft);max-width:150px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 22px;border-radius:12px;font-size:15px;font-weight:700}
+.btn.primary{background:var(--pine);color:#fff}
+.btn.primary:hover{background:var(--pine-deep)}
+.btn.ghost{border:1.5px solid var(--line);color:var(--ink-soft);background:var(--card)}
+.btn.ghost:hover{border-color:var(--ink-faint)}
+.btn.small{padding:8px 14px;font-size:13.5px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.muted{color:var(--ink-soft)} .faint{color:var(--ink-faint)}
+.tagline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--pine-tint);color:var(--pine)}
+.tag.diff{background:var(--paper);color:var(--ink-soft);border:1px solid var(--line)}
+.tag.clay{background:var(--clay-tint);color:var(--clay)}
+.tag.brass{background:var(--brass-tint);color:var(--brass)}
+.empty{padding:36px 12px;text-align:center;color:var(--ink-faint)}
+.hr{border:none;border-top:1px dashed var(--line);margin:16px 0}
+
+/* ── 總覽 ── */
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:560px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.stat .v{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .k{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.catrow{display:flex;align-items:center;gap:12px;padding:7px 0}
+.catrow .nm{width:118px;flex:none;font-size:14px}
+.catrow .bar{flex:1;height:9px;background:var(--line-soft);border-radius:99px;overflow:hidden}
+.catrow .bar i{display:block;height:100%;border-radius:99px;background:var(--pine-mid)}
+.catrow .bar i.low{background:var(--clay)} .catrow .bar i.mid{background:var(--brass)}
+.catrow .pc{width:86px;flex:none;text-align:right;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.today-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.callout{background:var(--brass-tint);border:1px solid var(--brass-line);border-radius:12px;padding:12px 16px;font-size:14.5px;margin-top:12px}
+
+/* ── 單字卡 ── */
+.v-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.fc{perspective:1400px;height:380px;margin-bottom:14px}
+.fc-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,.7,.3,1)}
+.fc.flip .fc-inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;overflow-y:auto}
+.face.back{transform:rotateY(180deg)}
+.face .top{display:flex;justify-content:space-between;align-items:center}
+.fc-word{font-family:var(--serif);font-size:44px;font-weight:600;letter-spacing:.01em;text-align:center;margin:auto 0 4px;line-height:1.15;word-break:break-word}
+.fc-pos{text-align:center;color:var(--ink-faint);font-style:italic;margin-bottom:auto}
+.fc-hint{text-align:center;font-size:12.5px;color:var(--ink-faint);letter-spacing:.1em}
+.fc-word-sm{font-family:var(--serif);font-size:22px;font-weight:600}
+.fc-meaning{font-size:19px;font-weight:700;margin:10px 0 2px}
+.fc-ex{font-family:var(--serif);font-size:16.5px;margin-top:10px;line-height:1.65}
+.fc-ex b{color:var(--pine);font-weight:700}
+.fc-exzh{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+.fc-tip{margin-top:12px;background:var(--brass-tint);border:1px solid var(--brass-line);border-radius:10px;padding:9px 13px;font-size:13.5px}
+.grade{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grade button{padding:14px 8px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-weight:700;font-size:15px}
+.grade .g0:hover{border-color:var(--clay);color:var(--clay)}
+.grade .g1:hover{border-color:var(--brass);color:var(--brass)}
+.grade .g2:hover{border-color:var(--pine);color:var(--pine)}
+.grade small{display:block;font-weight:400;font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+.starbtn{font-size:22px;line-height:1;color:var(--ink-faint)}
+.starbtn.on{color:var(--brass)}
+.speakbtn{font-size:17px;line-height:1;color:var(--ink-faint);background:none;border:none;padding:2px 4px;cursor:pointer;vertical-align:middle}
+.speakbtn:hover{color:var(--pine)}
+.boxdots{display:flex;gap:3px}
+.boxdots i{width:7px;height:7px;border-radius:99px;background:var(--line)}
+.boxdots i.f{background:var(--pine-mid)}
+
+/* ── 測驗 ── */
+.q-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.q-sent{font-size:19.5px;line-height:1.75;font-weight:600;margin:10px 0 18px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:center;gap:13px;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);text-align:left;font-size:15.5px;transition:border-color .12s}
+.opt:hover{border-color:var(--ink-faint)}
+.opt .abc{flex:none;width:26px;height:26px;border-radius:8px;background:var(--paper);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--ink-soft)}
+.opt.correct{border-color:var(--pine);background:var(--pine-tint)}
+.opt.correct .abc{background:var(--pine);border-color:var(--pine);color:#fff}
+.opt.wrong{border-color:var(--clay);background:var(--clay-tint)}
+.opt.wrong .abc{background:var(--clay);border-color:var(--clay);color:#fff}
+.opt.dim{opacity:.5}
+.opt[disabled]{cursor:default}
+.opt[disabled]:hover{border-color:var(--line)}
+.opt.correct[disabled]:hover{border-color:var(--pine)} .opt.wrong[disabled]:hover{border-color:var(--clay)}
+.verdict{font-size:16px;font-weight:800;margin:14px 0 4px}
+.verdict.ok{color:var(--pine)} .verdict.no{color:var(--clay)}
+.q-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px}
+.prog{height:5px;background:var(--line-soft);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.prog i{display:block;height:100%;background:var(--pine);border-radius:99px;transition:width .2s}
+.sum-score{text-align:center;padding:8px 0 2px}
+.sum-score .big{font-size:52px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--pine)}
+.setup-note{font-size:13px;color:var(--ink-faint);margin-top:10px}
+
+/* ── 收藏/錯題 ── */
+.fav-item{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--card)}
+.fav-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fav-meta .sp{margin-left:auto;display:flex;align-items:center;gap:10px}
+.wordrow{display:flex;align-items:baseline;gap:10px;padding:9px 2px;border-bottom:1px dashed var(--line-soft);flex-wrap:wrap}
+.wordrow .w{font-family:var(--serif);font-weight:700;font-size:16.5px}
+.wordrow .m{color:var(--ink-soft);font-size:14px}
+
+/* ── 題庫 ── */
+textarea{width:100%;min-height:150px;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-family:Consolas,"Cascadia Mono",monospace;font-size:13px;background:var(--card);color:var(--ink);resize:vertical}
+.imp-msg{border-radius:10px;padding:10px 14px;font-size:14px;margin-top:10px}
+.imp-msg.ok{background:var(--pine-tint);color:var(--pine-deep)}
+.imp-msg.err{background:var(--clay-tint);color:var(--clay)}
+details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:12px;background:var(--card)}
+details summary{cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink-soft)}
+details[open] summary{margin-bottom:10px}
+pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:12px;overflow-x:auto;line-height:1.5}
+.bank-row{display:flex;justify-content:space-between;align-items:center;padding:8px 2px;border-bottom:1px dashed var(--line-soft);font-size:14px;gap:8px}
+.bank-row .del{color:var(--clay);font-size:13px;font-weight:600;flex:none}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:560px){
+  .masthead h1{font-size:26px}
+  .q-sent{font-size:17.5px}
+  .fc-word{font-size:36px}
+  .catrow .nm{width:96px;font-size:13px}
+}
+
+/* ── 行動裝置 ── */
+@media(max-width:640px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{font-size:16px}
+  #app{max-width:100%;padding:14px 14px calc(72px + env(safe-area-inset-bottom))}
+  .masthead{gap:8px;margin-bottom:14px}
+  .eyebrow{font-size:9px}
+  .masthead h1{font-size:22px}
+  #accentbox .chiprow{flex-wrap:wrap}
+  .voicesel{max-width:120px;font-size:12.5px}
+
+  .tabs{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    display:flex;background:#fff;border:none;border-top:1px solid var(--line);
+    border-radius:0;padding:4px 2px calc(4px + env(safe-area-inset-bottom));
+    margin-bottom:0;overflow-x:visible;
+  }
+  .tabs button{
+    flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:2px;padding:6px 2px;border-radius:10px;
+    font-size:10.5px;font-weight:600;white-space:normal;
+  }
+  .tabs button.on{background:transparent;color:var(--pine-deep)}
+  .tabs button .tab-ic{display:block;font-size:20px;line-height:1}
+  .tabs button .tab-tx{display:flex;align-items:center;gap:2px;line-height:1.1}
+  .tabs button .n{display:none}
+
+  .card{padding:16px;margin-bottom:12px}
+  .btn{width:100%;min-height:48px;font-size:16px}
+  .opt{min-height:48px;padding:13px 14px;font-size:17px}
+  .fchip{min-height:40px;display:inline-flex;align-items:center;white-space:nowrap;flex:0 0 auto}
+  .chiprow{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .chiprow::-webkit-scrollbar{display:none}
+
+  .fc{height:min(58vh,460px)}
+  .fc-word{font-size:32px}
+  .fc-word-sm{font-size:19px}
+  .q-sent{font-size:18px}
+}
+</style>
+
+<div id="app">
+  <header class="masthead">
+    <div>
+      <a href="../../index.html" class="btn ghost small" id="homelink" style="margin-bottom:8px">← 首頁</a>
+      <div class="eyebrow">ENTRAÎNEMENT DE FRANÇAIS</div>
+      <h1>法文訓練場</h1>
+    </div>
+    <div id="accentbox"></div>
+    <select id="voicesel" class="voicesel"></select>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <main id="view"></main>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   內建資料（由 Claude 維護：新增單字貼給 Claude，會轉成同格式加進
+   V_DATA 陣列並重新發佈；資料格式詳見 README-題庫格式.md）
+   ===================================================================== */
+const BUILTIN_VOCAB = /*V_DATA*/[{"id":"f-v1","theme":"salut","themeName":"招呼與禮貌","word":"Bonjour","pos":"n.m. / interj.","meaning":"你好、早安","example":"Bonjour ! Comment allez-vous ?","exampleZh":"你好！你好嗎？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v2","theme":"salut","themeName":"招呼與禮貌","word":"Bonsoir","pos":"n.m. / interj.","meaning":"晚安、你好（傍晚後用）","example":"Bonsoir, bienvenue au restaurant.","exampleZh":"晚安，歡迎光臨餐廳。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v3","theme":"salut","themeName":"招呼與禮貌","word":"Salut","pos":"interj.","meaning":"嗨、拜拜（熟人之間）","example":"Salut ! Tu vas bien ?","exampleZh":"嗨！你還好嗎？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v4","theme":"salut","themeName":"招呼與禮貌","word":"Au revoir","pos":"interj.","meaning":"再見","example":"Au revoir, à demain !","exampleZh":"再見，明天見！","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v5","theme":"salut","themeName":"招呼與禮貌","word":"S'il vous plaît","pos":"loc. ph.","meaning":"請（正式/複數）","example":"Un café, s'il vous plaît.","exampleZh":"請給我一杯咖啡。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v6","theme":"salut","themeName":"招呼與禮貌","word":"S'il te plaît","pos":"loc. ph.","meaning":"請（非正式/單數）","example":"Passe-moi le sel, s'il te plaît.","exampleZh":"請把鹽遞給我。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v7","theme":"salut","themeName":"招呼與禮貌","word":"Merci","pos":"interj.","meaning":"謝謝","example":"Merci beaucoup pour votre aide.","exampleZh":"非常感謝您的幫忙。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v8","theme":"salut","themeName":"招呼與禮貌","word":"De rien","pos":"loc. ph.","meaning":"不客氣","example":"Merci ! De rien.","exampleZh":"謝謝！不客氣。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v9","theme":"salut","themeName":"招呼與禮貌","word":"Je vous en prie","pos":"loc. ph.","meaning":"不客氣、不用謝（正式）","example":"Je vous en prie, c'est tout à fait normal.","exampleZh":"不客氣，這理所當然。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v10","theme":"salut","themeName":"招呼與禮貌","word":"Enchanté(e)","pos":"adj. / interj.","meaning":"幸會、很高興認識你","example":"Enchanté de vous rencontrer, Monsieur.","exampleZh":"很高興認識您，先生。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v11","theme":"salut","themeName":"招呼與禮貌","word":"Excusez-moi","pos":"loc. ph.","meaning":"不好意思、請問（正式）","example":"Excusez-moi, où est la gare ?","exampleZh":"不好意思，請問火車站在哪裡？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v12","theme":"salut","themeName":"招呼與禮貌","word":"Pardon","pos":"interj.","meaning":"對不起、抱歉","example":"Pardon, je ne vous avais pas vu.","exampleZh":"對不起，我剛才沒看到您。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v13","theme":"salut","themeName":"招呼與禮貌","word":"Comment ça va ?","pos":"loc. ph.","meaning":"近來如何？","example":"Comment ça va depuis la semaine dernière ?","exampleZh":"上週以來過得如何？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v14","theme":"salut","themeName":"招呼與禮貌","word":"Ça va bien","pos":"loc. ph.","meaning":"很好、沒問題","example":"Ça va bien, merci ! Et toi ?","exampleZh":"很好，謝謝！那你呢？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v15","theme":"salut","themeName":"招呼與禮貌","word":"À bientôt","pos":"loc. ph.","meaning":"一會兒見、待會見","example":"Bonne journée, à bientôt !","exampleZh":"祝你有美好的一天，待會見！","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v16","theme":"salut","themeName":"招呼與禮貌","word":"À plus tard","pos":"loc. ph.","meaning":"回頭見、晚點見","example":"Je dois y aller, à plus tard !","exampleZh":"我得走了，回頭見！","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v17","theme":"salut","themeName":"招呼與禮貌","word":"Bonne nuit","pos":"loc. ph.","meaning":"晚安（睡前用）","example":"Bonne nuit, fais de beaux rêves.","exampleZh":"晚安，祝好夢。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v18","theme":"salut","themeName":"招呼與禮貌","word":"Bonne journée","pos":"loc. ph.","meaning":"祝你有美好的一天","example":"Merci pour votre accueil, bonne journée !","exampleZh":"謝謝您的款待，祝您有美好的一天！","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v19","theme":"salut","themeName":"招呼與禮貌","word":"Bon après-midi","pos":"loc. ph.","meaning":"祝下午愉快","example":"Bon après-midi à tous.","exampleZh":"祝大家下午愉快。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v20","theme":"salut","themeName":"招呼與禮貌","word":"Félicitations","pos":"n.f.pl.","meaning":"恭喜、祝賀","example":"Toutes mes félicitations pour ton mariage !","exampleZh":"衷心恭喜你結婚！","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v21","theme":"quotidien","themeName":"日常生活與作息","word":"Se réveiller","pos":"v. pron.","meaning":"醒來","example":"Je me réveille toujours à six heures.","exampleZh":"我總是六點醒來。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v22","theme":"quotidien","themeName":"日常生活與作息","word":"Se lever","pos":"v. pron.","meaning":"起床","example":"Il se lève immédiatement après son réveil.","exampleZh":"他醒來後立刻起床。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v23","theme":"quotidien","themeName":"日常生活與作息","word":"Se laver","pos":"v. pron.","meaning":"洗澡、洗臉","example":"Je me lave les mains avant de manger.","exampleZh":"我飯前洗手。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v24","theme":"quotidien","themeName":"日常生活與作息","word":"Prendre une douche","pos":"loc. v.","meaning":"洗淋浴","example":"Elle prend une douche rapide le matin.","exampleZh":"她早上洗個快速的淋浴。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v25","theme":"quotidien","themeName":"日常生活與作息","word":"Se brosser les dents","pos":"loc. v. pron.","meaning":"刷牙","example":"Il faut se brosser les dents après chaque repas.","exampleZh":"每餐飯後都必須刷牙。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v26","theme":"quotidien","themeName":"日常生活與作息","word":"S'habiller","pos":"v. pron.","meaning":"穿衣服","example":"Je m'habille chaudement en hiver.","exampleZh":"我冬天穿得很保暖。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v27","theme":"quotidien","themeName":"日常生活與作息","word":"Prendre le petit-déjeuner","pos":"loc. v.","meaning":"吃早餐","example":"Nous prenons le petit-déjeuner en famille.","exampleZh":"我們全家一起吃早餐。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v28","theme":"quotidien","themeName":"日常生活與作息","word":"Quitter la maison","pos":"loc. v.","meaning":"出門、離開家","example":"Je quitte la maison à sept heures et demie.","exampleZh":"我七點半出門。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v29","theme":"quotidien","themeName":"日常生活與作息","word":"Prendre le métro","pos":"loc. v.","meaning":"搭地鐵","example":"Elle prend le métro pour aller au travail.","exampleZh":"她搭地鐵去上班。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v30","theme":"quotidien","themeName":"日常生活與作息","word":"Travailler","pos":"v.","meaning":"工作","example":"Mon père travaille dans une grande entreprise.","exampleZh":"我父親在一家大公司工作。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v31","theme":"quotidien","themeName":"日常生活與作息","word":"Déjeuner","pos":"v. / n.m.","meaning":"吃午餐 / 午餐","example":"Où vas-tu déjeuner ce midi ?","exampleZh":"你中午要到哪裡吃午餐？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v32","theme":"quotidien","themeName":"日常生活與作息","word":"Rentrer","pos":"v.","meaning":"回家、返回","example":"Je rentre tard ce soir.","exampleZh":"我今天晚上很晚回家。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v33","theme":"quotidien","themeName":"日常生活與作息","word":"Dîner","pos":"v. / n.m.","meaning":"吃晚餐 / 晚餐","example":"Le dîner est presque prêt.","exampleZh":"晚餐快準備好了。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v34","theme":"quotidien","themeName":"日常生活與作息","word":"Se coucher","pos":"v. pron.","meaning":"上床睡覺","example":"Les enfants se couchent à vingt heures.","exampleZh":"孩子們晚上八點上床睡覺。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v35","theme":"quotidien","themeName":"日常生活與作息","word":"Dormir","pos":"v.","meaning":"睡覺","example":"J'ai besoin de dormir au moins huit heures.","exampleZh":"我需要至少睡八個小時。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v36","theme":"quotidien","themeName":"日常生活與作息","word":"Faire les courses","pos":"loc. v.","meaning":"買菜、採購生活用品","example":"On fait les courses le samedi matin.","exampleZh":"我們週六早上採購生活用品。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v37","theme":"quotidien","themeName":"日常生活與作息","word":"Cuisiner","pos":"v.","meaning":"做飯、烹飪","example":"J'aime cuisiner pour mes amis.","exampleZh":"我喜歡為朋友做飯。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v38","theme":"quotidien","themeName":"日常生活與作息","word":"Faire le ménage","pos":"loc. v.","meaning":"打掃家務","example":"Le week-end, nous faisons le ménage.","exampleZh":"週末時我們打掃家務。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v39","theme":"quotidien","themeName":"日常生活與作息","word":"Se reposer","pos":"v. pron.","meaning":"休息","example":"Après le travail, je me repose un peu.","exampleZh":"下班後，我休息一下。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v40","theme":"quotidien","themeName":"日常生活與作息","word":"Lire","pos":"v.","meaning":"閱讀","example":"Elle lit un livre avant de s'endormir.","exampleZh":"她在入睡前看一本書。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v41","theme":"resto","themeName":"飲食與餐廳","word":"Manger","pos":"v.","meaning":"吃","example":"Qu'est-ce que tu veux manger ce soir ?","exampleZh":"你今晚想吃什麼？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v42","theme":"resto","themeName":"飲食與餐廳","word":"Boire","pos":"v.","meaning":"喝","example":"Je bois un verre d'eau chaque matin.","exampleZh":"我每天早上喝一杯水。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v43","theme":"resto","themeName":"飲食與餐廳","word":"L'eau","pos":"n.f.","meaning":"水","example":"Une bouteille d'eau gazeuse, s'il vous plaît.","exampleZh":"請給我一瓶氣泡水。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v44","theme":"resto","themeName":"飲食與餐廳","word":"Le café","pos":"n.m.","meaning":"咖啡","example":"Je prends un café noir sans sucre.","exampleZh":"我喝黑咖啡，不加糖。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v45","theme":"resto","themeName":"飲食與餐廳","word":"Le thé","pos":"n.m.","meaning":"茶","example":"Préfères-tu le thé vert ou le thé noir ?","exampleZh":"你比較喜歡綠茶還是紅茶？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v46","theme":"resto","themeName":"飲食與餐廳","word":"Le pain","pos":"n.m.","meaning":"麵包","example":"Le pain français est très célèbre.","exampleZh":"法國的麵包非常有名。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v47","theme":"resto","themeName":"飲食與餐廳","word":"Le restaurant","pos":"n.m.","meaning":"餐廳","example":"Ce restaurant propose des plats délicieux.","exampleZh":"這家餐廳提供美味的菜餚。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v48","theme":"resto","themeName":"飲食與餐廳","word":"Le menu","pos":"n.m.","meaning":"菜單","example":"Le serveur m'apporte le menu.","exampleZh":"服務生拿菜單給我。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v49","theme":"resto","themeName":"飲食與餐廳","word":"L'addition","pos":"n.f.","meaning":"帳單（餐廳用）","example":"L'addition, s'il vous plaît !","exampleZh":"請結帳！","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v50","theme":"resto","themeName":"飲食與餐廳","word":"Le petit-déjeuner","pos":"n.m.","meaning":"早餐","example":"Le petit-déjeuner est inclus dans le prix.","exampleZh":"早餐已包含在價格內。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v51","theme":"resto","themeName":"飲食與餐廳","word":"Le déjeuner","pos":"n.m.","meaning":"午餐","example":"Le déjeuner est servi de midi à quatorze heures.","exampleZh":"午餐於中午十二點至十四點供應。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v52","theme":"resto","themeName":"飲食與餐廳","word":"Le dîner","pos":"n.m.","meaning":"晚餐","example":"Nous avons réservé une table pour le dîner.","exampleZh":"我們預訂了一張晚餐的桌子。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v53","theme":"resto","themeName":"飲食與餐廳","word":"Le serveur / La serveuse","pos":"n.","meaning":"服務生","example":"La serveuse est très gentille.","exampleZh":"那位女服務生非常親切。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v54","theme":"resto","themeName":"飲食與餐廳","word":"Délicieux / Délicieuse","pos":"adj.","meaning":"美味的","example":"Ce gâteau au chocolat est délicieux.","exampleZh":"這個巧克力蛋糕真美味。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v55","theme":"resto","themeName":"飲食與餐廳","word":"Le fruit","pos":"n.m.","meaning":"水果","example":"Il mange un fruit comme dessert.","exampleZh":"他吃一個水果當甜點。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v56","theme":"resto","themeName":"飲食與餐廳","word":"Le légume","pos":"n.m.","meaning":"蔬菜","example":"Il est important de manger des légumes frais.","exampleZh":"多吃新鮮蔬菜很重要。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v57","theme":"resto","themeName":"飲食與餐廳","word":"La viande","pos":"n.f.","meaning":"肉","example":"Je ne mange pas de viande, je suis végétarien.","exampleZh":"我不吃肉，我是素食者。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v58","theme":"resto","themeName":"飲食與餐廳","word":"Le poisson","pos":"n.m.","meaning":"魚","example":"Le poisson grillé est excellent.","exampleZh":"烤魚非常好吃。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v59","theme":"resto","themeName":"飲食與餐廳","word":"Le vin","pos":"n.m.","meaning":"葡萄酒","example":"Voulez-vous du vin rouge ou du vin blanc ?","exampleZh":"您要紅酒還是白酒？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v60","theme":"resto","themeName":"飲食與餐廳","word":"Le sucre","pos":"n.m.","meaning":"糖","example":"Je prends mon thé sans sucre.","exampleZh":"我喝茶不加糖。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v61","theme":"transport","themeName":"交通與旅遊","word":"La gare","pos":"n.f.","meaning":"火車站","example":"Où se trouve la gare la plus proche ?","exampleZh":"最近的火車站在哪裡？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v62","theme":"transport","themeName":"交通與旅遊","word":"Le train","pos":"n.m.","meaning":"火車","example":"Le train pour Paris part à neuf heures.","exampleZh":"去巴黎的火車九點出發。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v63","theme":"transport","themeName":"交通與旅遊","word":"L'aéroport","pos":"n.m.","meaning":"機場","example":"Il faut arriver à l'aéroport deux heures en avance.","exampleZh":"必須提前兩小時到達機場。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v64","theme":"transport","themeName":"交通與旅遊","word":"L'avion","pos":"n.m.","meaning":"飛機","example":"Le voyage en avion est très rapide.","exampleZh":"搭飛機旅行非常快。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v65","theme":"transport","themeName":"交通與旅遊","word":"Le billet","pos":"n.m.","meaning":"車票、機票、門票","example":"Avez-vous acheté votre billet de train ?","exampleZh":"您買好火車票了嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v66","theme":"transport","themeName":"交通與旅遊","word":"La voiture","pos":"n.f.","meaning":"汽車","example":"Je vais au travail en voiture.","exampleZh":"我開車去上班。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v67","theme":"transport","themeName":"交通與旅遊","word":"Le bus","pos":"n.m.","meaning":"公車","example":"Le bus numéro 42 s'arrête ici.","exampleZh":"42路公車停在這裡。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v68","theme":"transport","themeName":"交通與旅遊","word":"Le vélo","pos":"n.m.","meaning":"腳踏車","example":"Il adore faire du vélo le week-end.","exampleZh":"他喜歡在週末騎腳踏車。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v69","theme":"transport","themeName":"交通與旅遊","word":"À pied","pos":"loc. adv.","meaning":"步行","example":"Nous pouvons y aller à pied.","exampleZh":"我們可以步行去那裡。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v70","theme":"transport","themeName":"交通與旅遊","word":"L'hôtel","pos":"n.m.","meaning":"飯店","example":"Nous avons réservé une chambre d'hôtel.","exampleZh":"我們預訂了一間飯店房間。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v71","theme":"transport","themeName":"交通與旅遊","word":"Le passeport","pos":"n.m.","meaning":"護照","example":"N'oubliez pas votre passeport avant de partir.","exampleZh":"出發前別忘了你的護照。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v72","theme":"transport","themeName":"交通與旅遊","word":"Le bagage","pos":"n.m.","meaning":"行李","example":"Où puis-je récupérer mes bagages ?","exampleZh":"我可以在哪裡領取我的行李？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v73","theme":"transport","themeName":"交通與旅遊","word":"Le plan / La carte","pos":"n.m. / n.f.","meaning":"地圖","example":"Pouvez-vous me montrer sur la carte ?","exampleZh":"您可以在地圖上指給我看嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v74","theme":"transport","themeName":"交通與旅遊","word":"Tourner à gauche","pos":"loc. v.","meaning":"向左轉","example":"Tournez à gauche au prochain feu.","exampleZh":"在下一個紅綠燈向左轉。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v75","theme":"transport","themeName":"交通與旅遊","word":"Tourner à droite","pos":"loc. v.","meaning":"向右轉","example":"Prenez la première rue et tournez à droite.","exampleZh":"走第一條街然後向右轉。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v76","theme":"transport","themeName":"交通與旅遊","word":"Tout droit","pos":"loc. adv.","meaning":"直走","example":"Continuez tout droit pendant deux cents mètres.","exampleZh":"繼續往前直走兩百公尺。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v77","theme":"transport","themeName":"交通與旅遊","word":"Le ticket","pos":"n.m.","meaning":"（短途）票券、收據","example":"Un ticket de métro, s'il vous plaît.","exampleZh":"請給我一張地鐵票。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v78","theme":"transport","themeName":"交通與旅遊","word":"Le voyage","pos":"n.m.","meaning":"旅行","example":"Bon voyage à tous !","exampleZh":"祝大家旅途愉快！","collocations":[],"freq":"高頻","tip":""},{"id":"f-v79","theme":"transport","themeName":"交通與旅遊","word":"Visiter","pos":"v.","meaning":"參觀、拜訪（地方）","example":"Je veux visiter le musée du Louvre.","exampleZh":"我想參觀羅浮宮博物館。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v80","theme":"transport","themeName":"交通與旅遊","word":"La rue","pos":"n.f.","meaning":"街道","example":"Cette rue est très animée la nuit.","exampleZh":"這條街道晚上非常熱鬧。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v81","theme":"achat","themeName":"購物與金錢","word":"Acheter","pos":"v.","meaning":"購買","example":"Je vais acheter une nouvelle robe.","exampleZh":"我要去買一件新洋裝。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v82","theme":"achat","themeName":"購物與金錢","word":"Le magasin","pos":"n.m.","meaning":"商店","example":"Les magasins ferment à dix-neuf heures.","exampleZh":"商店在十九點關門。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v83","theme":"achat","themeName":"購物與金錢","word":"Le supermarché","pos":"n.m.","meaning":"超級市場","example":"Je fais mes courses au supermarché du coin.","exampleZh":"我在轉角的超市買菜。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v84","theme":"achat","themeName":"購物與金錢","word":"Le prix","pos":"n.m.","meaning":"價格","example":"Quel est le prix de cet article ?","exampleZh":"這件商品的價格是多少？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v85","theme":"achat","themeName":"購物與金錢","word":"Combien ça coûte ?","pos":"loc. ph.","meaning":"這多少錢？","example":"Excusez-moi, combien ça coûte ?","exampleZh":"不好意思，這多少錢？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v86","theme":"achat","themeName":"購物與金錢","word":"L'argent","pos":"n.m.","meaning":"金錢","example":"Je n'ai pas beaucoup d'argent sur moi.","exampleZh":"我身上沒帶很多錢。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v87","theme":"achat","themeName":"購物與金錢","word":"Payer","pos":"v.","meaning":"付款","example":"Puis-je payer par carte bancaire ?","exampleZh":"我可以用銀行卡付款嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v88","theme":"achat","themeName":"購物與金錢","word":"La carte bancaire","pos":"n.f.","meaning":"銀行卡、信用卡","example":"La carte bancaire est acceptée ici.","exampleZh":"這裡接受銀行卡付款。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v89","theme":"achat","themeName":"購物與金錢","word":"En espèces / En liquide","pos":"loc. adv.","meaning":"付現、現金","example":"Je préfère payer en espèces.","exampleZh":"我比較想付現。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v90","theme":"achat","themeName":"購物與金錢","word":"Cher / Chère","pos":"adj.","meaning":"昂貴的","example":"Cette montre est trop chère pour moi.","exampleZh":"這隻手錶對我來說太貴了。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v91","theme":"achat","themeName":"購物與金錢","word":"Pas cher / Bon marché","pos":"adj.","meaning":"便宜的","example":"Les fruits sont bon marché en cette saison.","exampleZh":"這個季節的水果很便宜。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v92","theme":"achat","themeName":"購物與金錢","word":"Le sac","pos":"n.m.","meaning":"袋子、包包","example":"Voulez-vous un sac en papier ?","exampleZh":"您需要紙袋嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v93","theme":"achat","themeName":"購物與金錢","word":"Le vendeur / La vendeuse","pos":"n.","meaning":"店員、售貨員","example":"La vendeuse m'a bien conseillé.","exampleZh":"女店員給了我很好的建議。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v94","theme":"achat","themeName":"購物與金錢","word":"Le reçu / Le ticket de caisse","pos":"n.m.","meaning":"收據、發票","example":"Gardez le ticket de caisse pour l'échange.","exampleZh":"請保留發票以便退換貨。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v95","theme":"achat","themeName":"購物與金錢","word":"Le choix","pos":"n.m.","meaning":"選擇","example":"Il y a beaucoup de choix dans ce magasin.","exampleZh":"這家商店有許多選擇。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v96","theme":"achat","themeName":"購物與金錢","word":"Vendre","pos":"v.","meaning":"販賣","example":"Ils vendent des produits bio.","exampleZh":"他們販賣有機產品。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v97","theme":"achat","themeName":"購物與金錢","word":"La réduction","pos":"n.f.","meaning":"打折、折扣","example":"Y a-t-il une réduction sur ces chaussures ?","exampleZh":"這些鞋子有打折嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v98","theme":"achat","themeName":"購物與金錢","word":"Les soldes","pos":"n.m.pl.","meaning":"換季大拍賣","example":"J'attends les soldes pour faire du shopping.","exampleZh":"我等換季大拍賣才去購物。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v99","theme":"achat","themeName":"購物與金錢","word":"Choisir","pos":"v.","meaning":"選擇","example":"C'est difficile de choisir entre ces deux options.","exampleZh":"在這兩個選項中做選擇很困難。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v100","theme":"achat","themeName":"購物與金錢","word":"Trouver","pos":"v.","meaning":"找到、發現","example":"J'ai trouvé un joli cadeau pour ma mère.","exampleZh":"我幫我母親找到了一份漂亮的禮物。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v101","theme":"travail","themeName":"工作與學習","word":"Le travail / Le boulot","pos":"n.m.","meaning":"工作","example":"J'ai beaucoup de travail cette semaine.","exampleZh":"我這週有許多工作。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v102","theme":"travail","themeName":"工作與學習","word":"L'entreprise / La société","pos":"n.f.","meaning":"公司","example":"Elle travaille dans une société informatique.","exampleZh":"她在一家資訊公司工作。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v103","theme":"travail","themeName":"工作與學習","word":"Le bureau","pos":"n.m.","meaning":"辦公室、書桌","example":"Mon bureau est au troisième étage.","exampleZh":"我的辦公室在三樓。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v104","theme":"travail","themeName":"工作與學習","word":"Le collègue","pos":"n.","meaning":"同事","example":"Mes collègues sont très sympathiques.","exampleZh":"我的同事們都很友善。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v105","theme":"travail","themeName":"工作與學習","word":"La réunion","pos":"n.f.","meaning":"會議","example":"La réunion commence à dix heures pile.","exampleZh":"會議在十點整準時開始。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v106","theme":"travail","themeName":"工作與學習","word":"Le projet","pos":"n.m.","meaning":"專案、計劃","example":"Nous gérons un nouveau projet important.","exampleZh":"我們正在管理一個重要的新專案。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v107","theme":"travail","themeName":"工作與學習","word":"L'ordinateur","pos":"n.m.","meaning":"電腦","example":"J'utilise mon ordinateur toute la journée.","exampleZh":"我整天都在使用我的電腦。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v108","theme":"travail","themeName":"工作與學習","word":"L'e-mail / Le courriel","pos":"n.m.","meaning":"電子郵件","example":"Je dois répondre à cet e-mail urgent.","exampleZh":"我必須回覆這封緊急郵件。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v109","theme":"travail","themeName":"工作與學習","word":"Le rendez-vous","pos":"n.m.","meaning":"預約、約會","example":"J'ai un rendez-vous professionnel demain.","exampleZh":"我明天有一個商務面談。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v110","theme":"travail","themeName":"工作與學習","word":"L'école","pos":"n.f.","meaning":"學校","example":"Les enfants vont à l'école en bus.","exampleZh":"孩子們搭公車去學校。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v111","theme":"travail","themeName":"工作與學習","word":"L'étudiant / L'étudiante","pos":"n.","meaning":"學生","example":"Il est étudiant à l'université de Paris.","exampleZh":"他是巴黎大學的學生。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v112","theme":"travail","themeName":"工作與學習","word":"Apprendre","pos":"v.","meaning":"學習","example":"J'apprends le français depuis un an.","exampleZh":"我學法文已經一年了。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v113","theme":"travail","themeName":"工作與學習","word":"Comprendre","pos":"v.","meaning":"理解、明白","example":"Je ne comprends pas cette phrase.","exampleZh":"我不懂這句話的意思。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v114","theme":"travail","themeName":"工作與學習","word":"Étudier","pos":"v.","meaning":"研究、讀書","example":"Elle étudie la médecine.","exampleZh":"她研讀醫學。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v115","theme":"travail","themeName":"工作與學習","word":"Le professeur","pos":"n.m.","meaning":"老師、教授","example":"Le professeur explique clairement la leçon.","exampleZh":"老師把課堂內容解釋得很清楚。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v116","theme":"travail","themeName":"工作與學習","word":"Le cours","pos":"n.m.","meaning":"課程","example":"Le cours de français est très intéressant.","exampleZh":"法文課非常有趣。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v117","theme":"travail","themeName":"工作與學習","word":"Le cahier","pos":"n.m.","meaning":"筆記本","example":"Écrivez les devoirs dans votre cahier.","exampleZh":"把作業寫在你們的筆記本上。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v118","theme":"travail","themeName":"工作與學習","word":"Le stylo","pos":"n.m.","meaning":"原子筆","example":"Prête-moi un stylo, s'il te plaît.","exampleZh":"請借我一枝原子筆。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v119","theme":"travail","themeName":"工作與學習","word":"Passer un examen","pos":"loc. v.","meaning":"參加考試","example":"Je vais passer un examen important demain.","exampleZh":"我明天要參加一場重要的考試。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v120","theme":"travail","themeName":"工作與學習","word":"Réussir","pos":"v.","meaning":"成功、通過（考試）","example":"Il a réussi son examen avec mention.","exampleZh":"他以優異成績通過了考試。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v121","theme":"loisir","themeName":"休閒與社交","word":"L'ami / L'amie","pos":"n.","meaning":"朋友","example":"Je vais prendre un verre avec un ami.","exampleZh":"我要去和一位朋友喝一杯。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v122","theme":"loisir","themeName":"休閒與社交","word":"Sortir","pos":"v.","meaning":"出門、出去玩","example":"Tu veux sortir ce week-end ?","exampleZh":"你週末想出去玩嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v123","theme":"loisir","themeName":"休閒與社交","word":"Le cinéma","pos":"n.m.","meaning":"電影院","example":"On va au cinéma ce soir ?","exampleZh":"我們今晚去電影院嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v124","theme":"loisir","themeName":"休閒與社交","word":"Le film","pos":"n.m.","meaning":"電影","example":"Ce film a gagné beaucoup de prix.","exampleZh":"這部電影贏得了許多獎項。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v125","theme":"loisir","themeName":"休閒與社交","word":"Le sport","pos":"n.m.","meaning":"運動","example":"Faire du sport est excellent pour la santé.","exampleZh":"做運動對健康非常好。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v126","theme":"loisir","themeName":"休閒與社交","word":"Le football","pos":"n.m.","meaning":"足球","example":"Le football est le sport le plus populaire.","exampleZh":"足球是最受歡迎的運動。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v127","theme":"loisir","themeName":"休閒與社交","word":"La musique","pos":"n.f.","meaning":"音樂","example":"J'écoute de la musique pour me détendre.","exampleZh":"我聽音樂來放鬆自己。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v128","theme":"loisir","themeName":"休閒與社交","word":"Chanter","pos":"v.","meaning":"唱歌","example":"Elle aime chanter sous la douche.","exampleZh":"她喜歡在淋浴時唱歌。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v129","theme":"loisir","themeName":"休閒與社交","word":"Danser","pos":"v.","meaning":"跳舞","example":"Ils dansent ensemble au festival.","exampleZh":"他們在節慶上一起跳舞。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v130","theme":"loisir","themeName":"休閒與社交","word":"Le livre","pos":"n.m.","meaning":"書本","example":"Ce livre est un best-seller mondial.","exampleZh":"這本書是全球暢銷書。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v131","theme":"loisir","themeName":"休閒與社交","word":"Le week-end","pos":"n.m.","meaning":"週末","example":"Passe un bon week-end !","exampleZh":"祝你週末愉快！","collocations":[],"freq":"高頻","tip":""},{"id":"f-v132","theme":"loisir","themeName":"休閒與社交","word":"Les vacances","pos":"n.f.pl.","meaning":"假期","example":"Où pars-tu en vacances cet été ?","exampleZh":"你今年夏天要去哪裡度假？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v133","theme":"loisir","themeName":"休閒與社交","word":"La fête","pos":"n.f.","meaning":"派對、節日","example":"C'est la fête nationale aujourd'hui.","exampleZh":"今天是國慶日。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v134","theme":"loisir","themeName":"休閒與社交","word":"Inviter","pos":"v.","meaning":"邀請","example":"Je t'invite à mon anniversaire.","exampleZh":"我邀請你來參加我的生日派對。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v135","theme":"loisir","themeName":"休閒與社交","word":"Le cadeau","pos":"n.m.","meaning":"禮物","example":"Merci pour ce magnifique cadeau !","exampleZh":"謝謝你這份精美的禮物！","collocations":[],"freq":"高頻","tip":""},{"id":"f-v136","theme":"loisir","themeName":"休閒與社交","word":"Voyager","pos":"v.","meaning":"旅遊","example":"J'aime voyager et découvrir de nouvelles cultures.","exampleZh":"我喜歡旅遊並探索新文化。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v137","theme":"loisir","themeName":"休閒與社交","word":"Prendre une photo","pos":"loc. v.","meaning":"拍照","example":"Pouvez-vous prendre une photo de nous ?","exampleZh":"您可以幫我們拍張照嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v138","theme":"loisir","themeName":"休閒與社交","word":"Le café (lieu)","pos":"n.m.","meaning":"咖啡廳","example":"On se retrouve au café à seize heures.","exampleZh":"我們下午四點在咖啡廳見。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v139","theme":"loisir","themeName":"休閒與社交","word":"Jouer","pos":"v.","meaning":"玩、打（球）、彈（樂器）","example":"Il joue au tennis tous les mardis.","exampleZh":"他每週二打網球。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v140","theme":"loisir","themeName":"休閒與社交","word":"Regarder la télé","pos":"loc. v.","meaning":"看電視","example":"Les enfants regardent la télé après l'école.","exampleZh":"孩子們放學後看電視。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v141","theme":"noms","themeName":"核心實用名詞","word":"Le temps","pos":"n.m.","meaning":"時間、天氣","example":"Je n'ai pas le temps de finir ce rapport.","exampleZh":"我沒有時間完成這份報告。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v142","theme":"noms","themeName":"核心實用名詞","word":"La maison","pos":"n.f.","meaning":"房子、家","example":"Leur maison est très lumineuse.","exampleZh":"他們的房子採光非常好。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v143","theme":"noms","themeName":"核心實用名詞","word":"L'homme","pos":"n.m.","meaning":"男人、人類","example":"C'est un homme de parole.","exampleZh":"他是一個守信用的人。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v144","theme":"noms","themeName":"核心實用名詞","word":"La femme","pos":"n.f.","meaning":"女人、妻子","example":"Cette femme est une grande scientifique.","exampleZh":"這位女性是一位偉大的科學家。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v145","theme":"noms","themeName":"核心實用名詞","word":"L'enfant","pos":"n.","meaning":"小孩","example":"L'enfant dort paisiblement.","exampleZh":"小孩正安詳地睡著。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v146","theme":"noms","themeName":"核心實用名詞","word":"Le jour","pos":"n.m.","meaning":"日子、白天","example":"Quel jour sommes-nous aujourd'hui ?","exampleZh":"今天星期幾？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v147","theme":"noms","themeName":"核心實用名詞","word":"La nuit","pos":"n.f.","meaning":"夜晚","example":"La nuit est fraîche en montagne.","exampleZh":"山上的夜晚很涼爽。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v148","theme":"noms","themeName":"核心實用名詞","word":"L'année","pos":"n.f.","meaning":"年份","example":"Bonne année et bonne santé !","exampleZh":"新年快樂，身體健康！","collocations":[],"freq":"高頻","tip":""},{"id":"f-v149","theme":"noms","themeName":"核心實用名詞","word":"L'heure","pos":"n.f.","meaning":"小時、時間","example":"Quelle heure est-il, s'il vous plaît ?","exampleZh":"請問現在幾點？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v150","theme":"noms","themeName":"核心實用名詞","word":"Le monde","pos":"n.m.","meaning":"世界、人們","example":"Il y a beaucoup de monde dans la rue.","exampleZh":"街上有很多人。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v151","theme":"noms","themeName":"核心實用名詞","word":"La vie","pos":"n.f.","meaning":"生命、生活","example":"La vie est belle.","exampleZh":"生活是美好的。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v152","theme":"noms","themeName":"核心實用名詞","word":"Le pays","pos":"n.m.","meaning":"國家","example":"La France est un beau pays.","exampleZh":"法國是一個美麗的國家。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v153","theme":"noms","themeName":"核心實用名詞","word":"La ville","pos":"n.f.","meaning":"城市","example":"Paris est la capitale et la plus grande ville.","exampleZh":"巴黎是首都也是最大的城市。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v154","theme":"noms","themeName":"核心實用名詞","word":"La raison","pos":"n.f.","meaning":"理由、理智","example":"Tu as raison, c'est la meilleure solution.","exampleZh":"你說得對，這是最好的解決方案。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v155","theme":"noms","themeName":"核心實用名詞","word":"Le problème","pos":"n.m.","meaning":"問題、困難","example":"Ce n'est pas un problème, ne t'inquiète pas.","exampleZh":"這不是問題，別擔心。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v156","theme":"noms","themeName":"核心實用名詞","word":"La solution","pos":"n.f.","meaning":"解決方案","example":"Trouver une solution rapidement est nécessaire.","exampleZh":"有必要迅速找到解決方案。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v157","theme":"noms","themeName":"核心實用名詞","word":"L'idée","pos":"n.f.","meaning":"想法、點子","example":"C'est une excellente idée !","exampleZh":"這是一個絕妙的主意！","collocations":[],"freq":"高頻","tip":""},{"id":"f-v158","theme":"noms","themeName":"核心實用名詞","word":"La chose","pos":"n.f.","meaning":"事情、物品","example":"C'est la même chose.","exampleZh":"這是同一件事。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v159","theme":"noms","themeName":"核心實用名詞","word":"L'endroit","pos":"n.m.","meaning":"地點、地方","example":"C'est l'endroit idéal pour un pique-nique.","exampleZh":"這是野餐的理想地點。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v160","theme":"noms","themeName":"核心實用名詞","word":"Le moment","pos":"n.m.","meaning":"時刻、一會兒","example":"Attendez un moment, s'il vous plaît.","exampleZh":"請稍等一下。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v161","theme":"verbes","themeName":"核心高頻動詞","word":"Être","pos":"v.","meaning":"是、在","example":"Je suis fatigué après cette longue journée.","exampleZh":"在這漫長的一天之後我累了。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v162","theme":"verbes","themeName":"核心高頻動詞","word":"Avoir","pos":"v.","meaning":"有","example":"J'ai vingt-cinq ans.","exampleZh":"我二十五歲。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v163","theme":"verbes","themeName":"核心高頻動詞","word":"Faire","pos":"v.","meaning":"做、從事","example":"Qu'est-ce que tu fais pendant ton temps libre ?","exampleZh":"你空閒時間都做些什麼？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v164","theme":"verbes","themeName":"核心高頻動詞","word":"Dire","pos":"v.","meaning":"說","example":"Qu'est-ce que tu as dit ?","exampleZh":"你剛才說了什麼？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v165","theme":"verbes","themeName":"核心高頻動詞","word":"Aller","pos":"v.","meaning":"去、前進","example":"Je vais à la bibliothèque pour réviser.","exampleZh":"我去圖書館溫習功課。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v166","theme":"verbes","themeName":"核心高頻動詞","word":"Voir","pos":"v.","meaning":"看見","example":"Je vois un bel oiseau sur la fenêtre.","exampleZh":"我看見窗戶上有一隻漂亮的小鳥。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v167","theme":"verbes","themeName":"核心高頻動詞","word":"Savoir","pos":"v.","meaning":"知道、會（技能）","example":"Je sais parler français et anglais.","exampleZh":"我會說法文和英文。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v168","theme":"verbes","themeName":"核心高頻動詞","word":"Pouvoir","pos":"v.","meaning":"能夠、可以","example":"Pouvez-vous m'aider, s'il vous plaît ?","exampleZh":"可以請您幫我一下嗎？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v169","theme":"verbes","themeName":"核心高頻動詞","word":"Vouloir","pos":"v.","meaning":"想要","example":"Je veux un verre d'eau, s'il vous plaît.","exampleZh":"請給我一杯水。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v170","theme":"verbes","themeName":"核心高頻動詞","word":"Devoir","pos":"v.","meaning":"必須、應該","example":"Je dois terminer mes devoirs ce soir.","exampleZh":"我今晚必須完成我的作業。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v171","theme":"verbes","themeName":"核心高頻動詞","word":"Venir","pos":"v.","meaning":"來","example":"Tu viens avec nous ce soir ?","exampleZh":"你今晚跟我們一起來嗎？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v172","theme":"verbes","themeName":"核心高頻動詞","word":"Prendre","pos":"v.","meaning":"拿、搭乘、吃喝","example":"Je prends le bus tous les matins.","exampleZh":"我每天早上搭公車。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v173","theme":"verbes","themeName":"核心高頻動詞","word":"Mettre","pos":"v.","meaning":"放、穿上","example":"Mets ton manteau, il fait froid dehors.","exampleZh":"穿上你的外套，外面很冷。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v174","theme":"verbes","themeName":"核心高頻動詞","word":"Donner","pos":"v.","meaning":"給予","example":"Donnez-moi votre avis sur ce plan.","exampleZh":"請給我您對這個計劃的意見。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v175","theme":"verbes","themeName":"核心高頻動詞","word":"Penser","pos":"v.","meaning":"想、認為","example":"Je pense que c'est une bonne décision.","exampleZh":"我認為這是一個正確的決定。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v176","theme":"verbes","themeName":"核心高頻動詞","word":"Aimer","pos":"v.","meaning":"喜歡、愛","example":"J'aime beaucoup le chocolat noir.","exampleZh":"我非常喜歡黑巧克力。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v177","theme":"verbes","themeName":"核心高頻動詞","word":"Trouver","pos":"v.","meaning":"尋找、覺得","example":"Comment trouvez-vous ce restaurant ?","exampleZh":"您覺得這家餐廳怎麼樣？","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v178","theme":"verbes","themeName":"核心高頻動詞","word":"Demander","pos":"v.","meaning":"要求、詢問","example":"Je demande le chemin pour aller au musée.","exampleZh":"我詢問去博物館的路。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v179","theme":"verbes","themeName":"核心高頻動詞","word":"Passer","pos":"v.","meaning":"度過、經過","example":"Le temps passe si vite !","exampleZh":"時間過得真快！","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v180","theme":"verbes","themeName":"核心高頻動詞","word":"Arriver","pos":"v.","meaning":"到達、發生","example":"Le train va arriver à l'heure.","exampleZh":"火車將會準時到達。","collocations":[],"freq":"極高頻","tip":""},{"id":"f-v181","theme":"adj","themeName":"形容詞與副詞","word":"Grand / Grande","pos":"adj.","meaning":"大的、高的","example":"C'est une grande maison avec un jardin.","exampleZh":"這是一間帶花園的大房子。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v182","theme":"adj","themeName":"形容詞與副詞","word":"Petit / Petite","pos":"adj.","meaning":"小的、矮的","example":"J'habite dans un petit appartement.","exampleZh":"我住在一個小公寓裡。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v183","theme":"adj","themeName":"形容詞與副詞","word":"Bon / Bonne","pos":"adj.","meaning":"好的、美味的","example":"Passez une bonne soirée !","exampleZh":"祝您有個美好的夜晚！","collocations":[],"freq":"中頻","tip":""},{"id":"f-v184","theme":"adj","themeName":"形容詞與副詞","word":"Mauvais / Mauvaise","pos":"adj.","meaning":"壞的、差的","example":"Le temps est mauvais aujourd'hui.","exampleZh":"今天天氣很糟糕。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v185","theme":"adj","themeName":"形容詞與副詞","word":"Beau / Belle","pos":"adj.","meaning":"美麗的、天氣晴朗","example":"Il fait beau aujourd'hui.","exampleZh":"今天天氣很好。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v186","theme":"adj","themeName":"形容詞與副詞","word":"Nouveau / Nouvelle","pos":"adj.","meaning":"新的","example":"J'ai acheté une nouvelle voiture.","exampleZh":"我買了一輛新車。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v187","theme":"adj","themeName":"形容詞與副詞","word":"Ancien / Ancienne","pos":"adj.","meaning":"古老的、舊的","example":"C'est un monument ancien et historique.","exampleZh":"這是一座古老且具歷史意義的古蹟。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v188","theme":"adj","themeName":"形容詞與副詞","word":"Jeune","pos":"adj.","meaning":"年輕的","example":"Ce jeune homme est très talentueux.","exampleZh":"這位年輕人非常有才華。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v189","theme":"adj","themeName":"形容詞與副詞","word":"Vieux / Vieille","pos":"adj.","meaning":"年老的、舊的","example":"Il lit un vieux livre d'histoire.","exampleZh":"他在讀一本古舊的歷史書。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v190","theme":"adj","themeName":"形容詞與副詞","word":"Facile","pos":"adj.","meaning":"容易的","example":"Le français n'est pas toujours facile.","exampleZh":"法文並不總是很容易。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v191","theme":"adj","themeName":"形容詞與副詞","word":"Difficile","pos":"adj.","meaning":"困難的","example":"C'est un exercice très difficile.","exampleZh":"這是一個非常困難的練習。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v192","theme":"adj","themeName":"形容詞與副詞","word":"Rapide","pos":"adj.","meaning":"快速的","example":"Ce train est très rapide.","exampleZh":"這班火車非常快。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v193","theme":"adj","themeName":"形容詞與副詞","word":"Lent / Lente","pos":"adj.","meaning":"緩慢的","example":"La connexion internet est lente aujourd'hui.","exampleZh":"今天的網路連線很慢。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v194","theme":"adj","themeName":"形容詞與副詞","word":"Heureux / Heureuse","pos":"adj.","meaning":"快樂的、幸福的","example":"Je suis heureux de vous voir.","exampleZh":"很高興見到您。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v195","theme":"adj","themeName":"形容詞與副詞","word":"Triste","pos":"adj.","meaning":"悲傷的","example":"C'est une histoire très triste.","exampleZh":"這是一個非常悲傷的故事。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v196","theme":"adj","themeName":"形容詞與副詞","word":"Fatigué / Fatiguée","pos":"adj.","meaning":"疲勞的","example":"Je vais me coucher car je suis fatigué.","exampleZh":"我要去睡覺了，因為我累了。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v197","theme":"adj","themeName":"形容詞與副詞","word":"Propre","pos":"adj.","meaning":"乾淨的、自己的","example":"La chambre est propre et rangée.","exampleZh":"房間乾淨又整齊。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v198","theme":"adj","themeName":"形容詞與副詞","word":"Sale","pos":"adj.","meaning":"髒的","example":"Vos chaussures sont sales, enlevez-les.","exampleZh":"您的鞋子髒了，請脫掉。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v199","theme":"adj","themeName":"形容詞與副詞","word":"Chaud / Chaude","pos":"adj.","meaning":"熱的、溫暖的","example":"Le café est encore bien chaud.","exampleZh":"咖啡還很熱。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v200","theme":"adj","themeName":"形容詞與副詞","word":"Froid / Froide","pos":"adj.","meaning":"冷的","example":"L'eau de la piscine est trop froide.","exampleZh":"游泳池的水太冷了。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v201","theme":"adj","themeName":"形容詞與副詞","word":"Souvent","pos":"adv.","meaning":"經常","example":"Je vais souvent au cinéma le week-end.","exampleZh":"我週末經常去電影院。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v202","theme":"adj","themeName":"形容詞與副詞","word":"Toujours","pos":"adv.","meaning":"總是、永遠","example":"Il est toujours à l'heure aux réunions.","exampleZh":"他開會總是準時。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v203","theme":"adj","themeName":"形容詞與副詞","word":"Parfois","pos":"adv.","meaning":"有時候","example":"Parfois, je préfère rester seul chez moi.","exampleZh":"有時候，我更喜歡一個人留在家裡。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v204","theme":"adj","themeName":"形容詞與副詞","word":"Jamais","pos":"adv.","meaning":"從不","example":"Je ne bois jamais de café après seize heures.","exampleZh":"我下午四點後從不喝咖啡。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v205","theme":"adj","themeName":"形容詞與副詞","word":"Maintenant","pos":"adv.","meaning":"現在","example":"Il faut partir maintenant sinon on sera en retard.","exampleZh":"現在必須出發，否則我們會遲到。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v206","theme":"adj","themeName":"形容詞與副詞","word":"Demain","pos":"adv. / n.m.","meaning":"明天","example":"À demain, bonne fin de journée !","exampleZh":"明天見，祝今天接下來的時間愉快！","collocations":[],"freq":"中頻","tip":""},{"id":"f-v207","theme":"adj","themeName":"形容詞與副詞","word":"Hier","pos":"adv. / n.m.","meaning":"昨天","example":"Hier, j'ai visité un musée magnifique.","exampleZh":"昨天，我參觀了一個精美的博物館。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v208","theme":"adj","themeName":"形容詞與副詞","word":"Très","pos":"adv.","meaning":"非常","example":"Ce plat est très épicé mais délicieux.","exampleZh":"這道菜非常辣但很美味。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v209","theme":"adj","themeName":"形容詞與副詞","word":"Beaucoup","pos":"adv.","meaning":"很多","example":"Merci beaucoup pour votre hospitalité.","exampleZh":"非常感謝您的款待。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v210","theme":"adj","themeName":"形容詞與副詞","word":"Un peu","pos":"adv.","meaning":"一點點","example":"Je parle un peu français.","exampleZh":"我會說一點點法文。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v211","theme":"nombres","themeName":"數字與時間","word":"Un / Une","pos":"num.","meaning":"一","example":"Un moment, s'il vous plaît.","exampleZh":"請稍等片刻。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v212","theme":"nombres","themeName":"數字與時間","word":"Deux","pos":"num.","meaning":"二","example":"Deux billets pour Paris.","exampleZh":"兩張去巴黎的車票。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v213","theme":"nombres","themeName":"數字與時間","word":"Trois","pos":"num.","meaning":"三","example":"Il est trois heures.","exampleZh":"現在是三點鐘。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v214","theme":"nombres","themeName":"數字與時間","word":"Quatre","pos":"num.","meaning":"四","example":"Quatre personnes ont réservé.","exampleZh":"有四個人預訂。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v215","theme":"nombres","themeName":"數字與時間","word":"Cinq","pos":"num.","meaning":"五","example":"J'arrive dans cinq minutes.","exampleZh":"我五分鐘內到。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v216","theme":"nombres","themeName":"數字與時間","word":"Six","pos":"num.","meaning":"六","example":"Il y a six chaises autour de la table.","exampleZh":"桌子周圍有六張椅子。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v217","theme":"nombres","themeName":"數字與時間","word":"Sept","pos":"num.","meaning":"七","example":"Le magasin ouvre à sept heures.","exampleZh":"商店七點開門。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v218","theme":"nombres","themeName":"數字與時間","word":"Huit","pos":"num.","meaning":"八","example":"Nous sommes huit à dîner ce soir.","exampleZh":"我們今晚有八個人一起吃飯。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v219","theme":"nombres","themeName":"數字與時間","word":"Neuf","pos":"num.","meaning":"九","example":"Le film commence à neuf heures.","exampleZh":"電影九點開始。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v220","theme":"nombres","themeName":"數字與時間","word":"Dix","pos":"num.","meaning":"十","example":"J'ai dix minutes de retard.","exampleZh":"我遲到十分鐘。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v221","theme":"nombres","themeName":"數字與時間","word":"Lundi","pos":"n.m.","meaning":"星期一","example":"La réunion est fixée à lundi.","exampleZh":"會議定在星期一。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v222","theme":"nombres","themeName":"數字與時間","word":"Mardi","pos":"n.m.","meaning":"星期二","example":"Je vais à la piscine le mardi.","exampleZh":"我每週二去游泳池。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v223","theme":"nombres","themeName":"數字與時間","word":"Mercredi","pos":"n.m.","meaning":"星期三","example":"Le mercredi, les enfants n'ont pas d'école.","exampleZh":"星期三孩子們不用上學。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v224","theme":"nombres","themeName":"數字與時間","word":"Jeudi","pos":"n.m.","meaning":"星期四","example":"On se voit jeudi soir ?","exampleZh":"我們星期四晚上見面嗎？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v225","theme":"nombres","themeName":"數字與時間","word":"Vendredi","pos":"n.m.","meaning":"星期五","example":"Le bon week-end commence vendredi !","exampleZh":"美好的週末從星期五開始！","collocations":[],"freq":"高頻","tip":""},{"id":"f-v226","theme":"nombres","themeName":"數字與時間","word":"Samedi","pos":"n.m.","meaning":"星期六","example":"Le samedi est mon jour préféré.","exampleZh":"星期六是我最喜歡的日子。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v227","theme":"nombres","themeName":"數字與時間","word":"Dimanche","pos":"n.m.","meaning":"星期日","example":"Le dimanche, tout est calme.","exampleZh":"星期日一切都很安靜。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v228","theme":"nombres","themeName":"數字與時間","word":"Janvier","pos":"n.m.","meaning":"一月","example":"Le nouvel an commence en janvier.","exampleZh":"新的一年從一月開始。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v229","theme":"nombres","themeName":"數字與時間","word":"Février","pos":"n.m.","meaning":"二月","example":"Février est le mois le plus court.","exampleZh":"二月是最短的月份。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v230","theme":"nombres","themeName":"數字與時間","word":"Mars","pos":"n.m.","meaning":"三月","example":"Le printemps arrive en mars.","exampleZh":"春天在三月來臨。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v231","theme":"nombres","themeName":"數字與時間","word":"Avril","pos":"n.m.","meaning":"四月","example":"Il pleut souvent en avril.","exampleZh":"四月經常下雨。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v232","theme":"nombres","themeName":"數字與時間","word":"Mai","pos":"n.m.","meaning":"五月","example":"Les fleurs poussent en mai.","exampleZh":"五月花朵盛開。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v233","theme":"nombres","themeName":"數字與時間","word":"Juin","pos":"n.m.","meaning":"六月","example":"L'école finit en juin.","exampleZh":"學校在六月結束。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v234","theme":"nombres","themeName":"數字與時間","word":"Juillet","pos":"n.m.","meaning":"七月","example":"Il fait très chaud en juillet.","exampleZh":"七月非常炎熱。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v235","theme":"nombres","themeName":"數字與時間","word":"Août","pos":"n.m.","meaning":"八月","example":"Beaucoup de gens partent en vacances en août.","exampleZh":"許多人在八月去度假。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v236","theme":"nombres","themeName":"數字與時間","word":"Septembre","pos":"n.m.","meaning":"九月","example":"La rentrée scolaire est en septembre.","exampleZh":"開學是在九月。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v237","theme":"nombres","themeName":"數字與時間","word":"Octobre","pos":"n.m.","meaning":"十月","example":"Les feuilles tombent en octobre.","exampleZh":"樹葉在十月落下。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v238","theme":"nombres","themeName":"數字與時間","word":"Novembre","pos":"n.m.","meaning":"十一月","example":"Il commence à faire froid en novembre.","exampleZh":"十一月開始變冷。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v239","theme":"nombres","themeName":"數字與時間","word":"Décembre","pos":"n.m.","meaning":"十二月","example":"Noël est en décembre.","exampleZh":"聖誕節在十二月。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v240","theme":"nombres","themeName":"數字與時間","word":"La semaine","pos":"n.f.","meaning":"星期、週","example":"À la semaine prochaine !","exampleZh":"下週見！","collocations":[],"freq":"高頻","tip":""},{"id":"f-v241","theme":"nombres","themeName":"數字與時間","word":"Le mois","pos":"n.m.","meaning":"月份","example":"Ce mois passe très vite.","exampleZh":"這個月過得真快。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v242","theme":"nombres","themeName":"數字與時間","word":"La saison","pos":"n.f.","meaning":"季節","example":"Quelle est votre saison préférée ?","exampleZh":"您最喜歡的季節是什麼？","collocations":[],"freq":"高頻","tip":""},{"id":"f-v243","theme":"nombres","themeName":"數字與時間","word":"Le printemps","pos":"n.m.","meaning":"春天","example":"Les fleurs poussent au printemps.","exampleZh":"花朵在春天綻放。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v244","theme":"nombres","themeName":"數字與時間","word":"L'été","pos":"n.m.","meaning":"夏天","example":"J'adore aller à la plage en été.","exampleZh":"我喜歡夏天去海灘。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v245","theme":"nombres","themeName":"數字與時間","word":"L'automne","pos":"n.m.","meaning":"秋天","example":"Les feuilles tombent en automne.","exampleZh":"樹葉在秋天落下。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v246","theme":"nombres","themeName":"數字與時間","word":"L'hiver","pos":"n.m.","meaning":"冬天","example":"Il neige souvent en hiver.","exampleZh":"冬天經常下雪。","collocations":[],"freq":"高頻","tip":""},{"id":"f-v247","theme":"corps","themeName":"人體與健康","word":"La tête","pos":"n.f.","meaning":"頭部","example":"J'ai mal à la tête.","exampleZh":"我頭痛。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v248","theme":"corps","themeName":"人體與健康","word":"Le visage","pos":"n.m.","meaning":"臉部","example":"Elle a un joli visage.","exampleZh":"她有一張好看的臉。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v249","theme":"corps","themeName":"人體與健康","word":"Les yeux","pos":"n.m.pl.","meaning":"眼睛","example":"Il a les yeux bleus.","exampleZh":"他有一雙藍眼睛。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v250","theme":"corps","themeName":"人體與健康","word":"Le nez","pos":"n.m.","meaning":"鼻子","example":"Mouchez votre nez.","exampleZh":"擤你的鼻子。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v251","theme":"corps","themeName":"人體與健康","word":"La bouche","pos":"n.f.","meaning":"嘴巴","example":"Fermez la bouche, s'il vous plaît.","exampleZh":"請閉上嘴巴。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v252","theme":"corps","themeName":"人體與健康","word":"Le bras","pos":"n.m.","meaning":"手臂","example":"Il s'est cassé le bras.","exampleZh":"他折斷了手臂。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v253","theme":"corps","themeName":"人體與健康","word":"La main","pos":"n.f.","meaning":"手","example":"Donne-moi la main.","exampleZh":"把手給我。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v254","theme":"corps","themeName":"人體與健康","word":"La jambe","pos":"n.f.","meaning":"腿","example":"Mes jambes sont fatiguées.","exampleZh":"我的腿累了。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v255","theme":"corps","themeName":"人體與健康","word":"Le pied","pos":"n.m.","meaning":"腳","example":"Aller à pied est sain.","exampleZh":"走路去很健康。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v256","theme":"corps","themeName":"人體與健康","word":"Le docteur / Le médecin","pos":"n.m.","meaning":"醫生","example":"Je dois voir un médecin.","exampleZh":"我必須看醫生。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v257","theme":"corps","themeName":"人體與健康","word":"L'hôpital","pos":"n.m.","meaning":"醫院","example":"L'hôpital est au centre-ville.","exampleZh":"醫院在市中心。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v258","theme":"corps","themeName":"人體與健康","word":"Le médicament","pos":"n.m.","meaning":"藥物","example":"Prenez ce médicament après le repas.","exampleZh":"飯後服用此藥物。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v259","theme":"corps","themeName":"人體與健康","word":"La santé","pos":"n.f.","meaning":"健康","example":"La santé est la chose la plus importante.","exampleZh":"健康是最重要的事情。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v260","theme":"corps","themeName":"人體與健康","word":"Malade","pos":"adj.","meaning":"生病的","example":"Je ne viens pas, je suis malade.","exampleZh":"我不來了，我生病了。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v261","theme":"maison","themeName":"居家生活物品","word":"La table","pos":"n.f.","meaning":"桌子","example":"Le dîner est sur la table.","exampleZh":"晚餐在桌上。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v262","theme":"maison","themeName":"居家生活物品","word":"La chaise","pos":"n.f.","meaning":"椅子","example":"Asseyez-vous sur cette chaise.","exampleZh":"請坐在這張椅子上。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v263","theme":"maison","themeName":"居家生活物品","word":"Le lit","pos":"n.m.","meaning":"床","example":"Je vais me jeter sur mon lit.","exampleZh":"我要躺到我的床上。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v264","theme":"maison","themeName":"居家生活物品","word":"La porte","pos":"n.f.","meaning":"門","example":"Fermez la porte derrière vous.","exampleZh":"請隨手關門。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v265","theme":"maison","themeName":"居家生活物品","word":"La fenêtre","pos":"n.f.","meaning":"窗戶","example":"Ouvrez la fenêtre pour avoir de l'air.","exampleZh":"打開窗戶透透氣。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v266","theme":"maison","themeName":"居家生活物品","word":"La clé","pos":"n.f.","meaning":"鑰匙","example":"J'ai perdu mes clés de voiture.","exampleZh":"我弄丟了我的車鑰匙。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v267","theme":"maison","themeName":"居家生活物品","word":"Le téléphone","pos":"n.m.","meaning":"電話","example":"Répondez au téléphone, s'il vous plaît.","exampleZh":"請接電話。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v268","theme":"maison","themeName":"居家生活物品","word":"La lumière","pos":"n.f.","meaning":"燈光、光線","example":"Éteignez la lumière en partant.","exampleZh":"離開時請關燈。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v269","theme":"maison","themeName":"居家生活物品","word":"La cuisine","pos":"n.f.","meaning":"廚房","example":"Maman prépare le repas dans la cuisine.","exampleZh":"媽媽在廚房準備飯菜。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v270","theme":"maison","themeName":"居家生活物品","word":"La salle de bain","pos":"n.f.","meaning":"浴室","example":"Où se trouve la salle de bain ?","exampleZh":"浴室在哪裡？","collocations":[],"freq":"中頻","tip":""},{"id":"f-v271","theme":"meteo","themeName":"天氣與環境","word":"Le soleil","pos":"n.m.","meaning":"太陽","example":"Le soleil brille aujourd'hui.","exampleZh":"今天陽光普照。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v272","theme":"meteo","themeName":"天氣與環境","word":"La pluie","pos":"n.f.","meaning":"雨","example":"J'aime marcher sous la pluie.","exampleZh":"我喜歡在雨中漫步。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v273","theme":"meteo","themeName":"天氣與環境","word":"Le ciel","pos":"n.m.","meaning":"天空","example":"Le ciel est complètement bleu.","exampleZh":"天空完全是藍色的。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v274","theme":"meteo","themeName":"天氣與環境","word":"Le nuage","pos":"n.m.","meaning":"雲","example":"Il y a beaucoup de nuages ce matin.","exampleZh":"今天早上雲很多。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v275","theme":"meteo","themeName":"天氣與環境","word":"Le vent","pos":"n.m.","meaning":"風","example":"Le vent souffle fort sur la côte.","exampleZh":"海岸上風吹得很大。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v276","theme":"meteo","themeName":"天氣與環境","word":"La neige","pos":"n.f.","meaning":"雪","example":"Les enfants adorent jouer dans la neige.","exampleZh":"孩子們喜歡在雪中玩耍。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v277","theme":"meteo","themeName":"天氣與環境","word":"Le chaud","pos":"n.m.","meaning":"熱","example":"J'ai très chaud ici.","exampleZh":"我這裡覺得很熱。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v278","theme":"meteo","themeName":"天氣與環境","word":"Le froid","pos":"n.m.","meaning":"冷","example":"Ferme la porte, le froid entre.","exampleZh":"關上門，冷氣進來了。","collocations":[],"freq":"中頻","tip":""},{"id":"f-v279","theme":"pattern","themeName":"句型","word":"Je voudrais...","pos":"句型","meaning":"我想要.../請給我...","example":"Je voudrais un café sans sucre, s'il vous plaît.","exampleZh":"我想要一杯不加糖的咖啡，謝謝。","collocations":[],"freq":"高頻","tip":"句型模組：可替換句中名詞/動詞自由造句。"},{"id":"f-v280","theme":"pattern","themeName":"句型","word":"Où est... ? / Où se trouve... ?","pos":"句型","meaning":"在哪裡？","example":"Où se trouve la station de métro la plus proche ?","exampleZh":"最近的地鐵站在哪裡？","collocations":[],"freq":"高頻","tip":"句型模組：可替換句中名詞/動詞自由造句。"},{"id":"f-v281","theme":"pattern","themeName":"句型","word":"Est-ce que je peux... ?","pos":"句型","meaning":"我可以...嗎？","example":"Est-ce que je peux payer par carte bancaire ?","exampleZh":"我可以刷卡付費嗎？","collocations":[],"freq":"高頻","tip":"句型模組：可替換句中名詞/動詞自由造句。"},{"id":"f-v282","theme":"pattern","themeName":"句型","word":"Il y a...","pos":"句型","meaning":"有...","example":"Il y a une boulangerie près d'ici.","exampleZh":"這附近有一家麵包店。","collocations":[],"freq":"高頻","tip":"句型模組：可替換句中名詞/動詞自由造句。"},{"id":"f-v283","theme":"pattern","themeName":"句型","word":"C'est... / Ce n'est pas...","pos":"句型","meaning":"這是.../這不是...","example":"C'est magnifique !","exampleZh":"這太棒了！","collocations":[],"freq":"高頻","tip":"句型模組：可替換句中名詞/動詞自由造句。"},{"id":"f-v284","theme":"pattern","themeName":"句型","word":"Je ne sais pas.","pos":"句型","meaning":"我不知道。","example":"Désolé, je ne sais pas où il est.","exampleZh":"抱歉，我不知道他在哪裡。","collocations":[],"freq":"高頻","tip":"句型模組：可替換句中名詞/動詞自由造句。"},{"id":"f-v285","theme":"pattern","themeName":"句型","word":"Qu'est-ce que c'est ?","pos":"句型","meaning":"這是什麼？","example":"Qu'est-ce que c'est que cet outil ?","exampleZh":"這是什麼工具？","collocations":[],"freq":"高頻","tip":"句型模組：可替換句中名詞/動詞自由造句。"}]/*V_DATA_END*/;
+
+const THEMES = [
+  {key:'salut',     name:'招呼與禮貌'},
+  {key:'quotidien', name:'日常生活與作息'},
+  {key:'resto',     name:'飲食與餐廳'},
+  {key:'transport', name:'交通與旅遊'},
+  {key:'achat',     name:'購物與金錢'},
+  {key:'travail',   name:'工作與學習'},
+  {key:'loisir',    name:'休閒與社交'},
+  {key:'noms',      name:'核心實用名詞'},
+  {key:'verbes',    name:'核心高頻動詞'},
+  {key:'adj',       name:'形容詞與副詞'},
+  {key:'nombres',   name:'數字與時間'},
+  {key:'corps',     name:'人體與健康'},
+  {key:'maison',    name:'居家生活物品'},
+  {key:'meteo',     name:'天氣與環境'},
+  {key:'pattern',   name:'句型'},
+];
+const SRS_IV = [0,1,3,7,14];          // Leitner 盒 0-4 的複習間隔（天）
+const LS_KEY = 'francais_v1';
+
+/* ── 儲存層 ── */
+function defaults(){ return {vsrs:{}, custom:{vocab:[],seq:1}, qstats:{}, history:{}}; }
+let store = load();
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem(LS_KEY));
+    if(!s || typeof s!=='object') return defaults();
+    const d = defaults();
+    for(const k in d) if(!(k in s)) s[k]=d[k];
+    if(!s.custom.seq) s.custom.seq=1;
+    return s;
+  }catch(e){ return defaults(); }
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(store)); }catch(e){} }
+function today(){ return Math.floor(Date.now()/864e5); }
+function streak(){
+  let n=0, d=today();
+  while(store.history[d]){ n++; d--; }
+  return n;
+}
+function touchToday(){ store.history[today()]=true; }
+
+function allV(){ return BUILTIN_VOCAB.concat(store.custom.vocab); }
+function vsrs(id){ return store.vsrs[id] || (store.vsrs[id]={box:0,due:today(),seen:0,star:false}); }
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pct(c,a){ return a? Math.round(c/a*100) : null; }
+const ABC = ['A','B','C','D'];
+
+/* 確定性洗牌：用字串 seed 產生穩定亂數，避免同一題每次重render位置又變 */
+function seededShuffle(arr, seedStr){
+  let seed = 0;
+  for(let i=0;i<seedStr.length;i++) seed = (seed*31 + seedStr.charCodeAt(i)) >>> 0;
+  function rnd(){ seed = (seed*1103515245 + 12345) >>> 0; return seed / 4294967296; }
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+/* ── 發音（瀏覽器內建 speechSynthesis，無外部資源） ── */
+const SPEECH_OK = (typeof window!=='undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance!=='undefined');
+const ACCENT_KEY = 'francais_accent';
+let ACCENT = 'fr';       // 'fr' = France, 'ca' = Canada
+try{ const a = localStorage.getItem(ACCENT_KEY); if(a==='fr'||a==='ca') ACCENT=a; }catch(e){}
+function setAccent(a){ ACCENT = (a==='ca') ? 'ca' : 'fr'; try{ localStorage.setItem(ACCENT_KEY, ACCENT); }catch(e){} render(); }
+let _voices = [];
+function _loadVoices(){ try{ _voices = speechSynthesis.getVoices()||[]; }catch(e){ _voices=[]; } }
+function _onVoicesReady(){ _loadVoices(); _fillVoiceSel(); render(); }
+if(SPEECH_OK){
+  _loadVoices();
+  if(typeof speechSynthesis.addEventListener==='function'){
+    speechSynthesis.addEventListener('voiceschanged', _onVoicesReady);
+  } else {
+    speechSynthesis.onvoiceschanged = _onVoicesReady;
+  }
+}
+function hasCAVoice(){ return _voices.some(v=>/^fr-CA/i.test(v.lang)); }
+function _fillVoiceSel(){
+  const sel = document.getElementById('voicesel');
+  if(!sel) return;
+  if(!SPEECH_OK || !_voices.length){ sel.style.display='none'; sel.innerHTML=''; return; }
+  const frVoices = _voices.filter(v=>/^fr-/i.test(v.lang));
+  if(!frVoices.length){ sel.style.display='none'; sel.innerHTML=''; return; }
+  const cur = _savedVoiceName();
+  const shortName = n => n.replace(/^Microsoft\s+/i,'').replace(/\s*-\s*(French.*|Fran[cç]ais.*)$/i,'').trim();
+  const groups = {};
+  frVoices.forEach(v=>{ (groups[v.lang]=groups[v.lang]||[]).push(v); });
+  let html = '<option value="auto">自動（推薦）</option>';
+  Object.keys(groups).sort().forEach(lang=>{
+    html += '<optgroup label="'+esc(lang)+'">';
+    groups[lang].forEach(v=>{
+      html += '<option value="'+esc(v.name)+'" '+(cur===v.name?'selected':'')+'>'+esc(shortName(v.name))+'</option>';
+    });
+    html += '</optgroup>';
+  });
+  sel.innerHTML = html;
+  sel.style.display = '';
+  if(cur==='auto') sel.value='auto';
+}
+const VOICE_KEY = 'francais_voice';
+function _savedVoiceName(){ try{ return localStorage.getItem(VOICE_KEY) || 'auto'; }catch(e){ return 'auto'; } }
+function _scoreVoice(v){
+  let s = 0;
+  if(/Natural/i.test(v.name)) s += 100;
+  if(/Neural/i.test(v.name)) s += 80;
+  if(/Google/i.test(v.name)) s += 60;
+  if(/Online/i.test(v.name)) s += 20;
+  if(/Desktop/i.test(v.name)) s -= 50;
+  if(v.localService===false) s += 10;
+  return s;
+}
+function _bestOf(list){
+  if(!list.length) return null;
+  return list.slice().sort((a,b)=>_scoreVoice(b)-_scoreVoice(a))[0];
+}
+function _pickVoice(){
+  if(!_voices || !_voices.length) _loadVoices();
+  if(!_voices || !_voices.length) return null;
+  const chosen = _savedVoiceName();
+  if(chosen && chosen!=='auto'){
+    const v = _voices.find(v=>v.name===chosen);
+    if(v) return v;
+  }
+  const wantLang = ACCENT==='ca' ? 'fr-CA' : 'fr-FR';
+  const sameAccent = _voices.filter(v=>v.lang===wantLang);
+  if(sameAccent.length) return _bestOf(sameAccent);
+  const anyFr = _voices.filter(v=>/^fr-/i.test(v.lang));
+  return _bestOf(anyFr);
+}
+function speak(text){
+  if(!SPEECH_OK || !text) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(String(text));
+    u.lang = ACCENT==='ca' ? 'fr-CA' : 'fr-FR';
+    u.rate = 0.92;
+    const v = _pickVoice();
+    if(v){ try{ u.voice = v; u.lang = v.lang; }catch(e){ /* 指派失敗就用預設聲照唸 */ } }
+    speechSynthesis.speak(u);
+  }catch(e){ /* 靜默失敗，不中斷 UI */ }
+}
+
+/* =====================================================================
+   狀態與渲染
+   ===================================================================== */
+const ui = {
+  tab:'home',
+  vocab:{theme:'all', mode:'due', queue:[], idx:0, flip:false, done:0, browseIdx:0},
+  quiz:{stage:'setup', theme:'all', count:15, mode:'mixed', list:[], idx:0, picked:null, session:[]},
+  fav:{filter:'star'},
+  bank:{msg:null},
+  backupShow:false,
+};
+
+const TABS = [
+  {key:'home',  name:'總覽',   icon:'🏠'},
+  {key:'vocab', name:'單字卡', icon:'📚'},
+  {key:'quiz',  name:'測驗',   icon:'✏️'},
+  {key:'fav',   name:'收藏・錯題', icon:'⭐'},
+  {key:'bank',  name:'題庫',   icon:'🗂'},
+];
+function render(){
+  const dueN = allV().filter(w=>{const s=store.vsrs[w.id]; return !s || s.due<=today();}).length;
+  document.getElementById('tabs').innerHTML = TABS.map(t=>{
+    const badge = (t.key==='vocab' && dueN>0) ? '<span class="n">'+dueN+'</span>' : '';
+    return '<button role="tab" data-act="nav" data-tab="'+t.key+'" class="'+(ui.tab===t.key?'on':'')+'" aria-selected="'+(ui.tab===t.key)+'"><span class="tab-ic">'+t.icon+'</span><span class="tab-tx">'+t.name+badge+'</span></button>';
+  }).join('');
+  const abox = document.getElementById('accentbox');
+  if(abox && SPEECH_OK){
+    const showCA = hasCAVoice();
+    abox.innerHTML = '<div class="chiprow">'+
+      '<button class="fchip '+(ACCENT==='fr'?'on':'')+'" data-act="setAccent" data-a="fr">🇫🇷 法國</button>'+
+      (showCA ? '<button class="fchip '+(ACCENT==='ca'?'on':'')+'" data-act="setAccent" data-a="ca">🇨🇦 加拿大</button>' : '')+
+      '</div>';
+  } else if(abox){ abox.innerHTML=''; }
+  const v = document.getElementById('view');
+  v.innerHTML = ({home:rHome, vocab:rVocab, quiz:rQuiz, fav:rFav, bank:rBank}[ui.tab])();
+  v.scrollTop=0;
+}
+
+/* ── 總覽 ── */
+function rHome(){
+  const vAll=allV();
+  const mastered = vAll.filter(w=>{const s=store.vsrs[w.id]; return s && s.box>=3;}).length;
+  const dueN = vAll.filter(w=>{const s=store.vsrs[w.id]; return !s || s.due<=today();}).length;
+  const starW = vAll.filter(w=>{const s=store.vsrs[w.id];return s&&s.star;});
+  const qs = Object.entries(store.qstats);
+  let A=0,C=0; qs.forEach(([,s])=>{A+=s.a;C+=s.c;});
+  const acc = pct(C,A);
+
+  const rows = THEMES.map(t=>{
+    const list = vAll.filter(w=>w.theme===t.key);
+    const masteredN = list.filter(w=>{const s=store.vsrs[w.id]; return s && s.box>=3;}).length;
+    return {t, total:list.length, p: list.length? Math.round(masteredN/list.length*100) : null};
+  }).filter(r=>r.total>0);
+  const weak = rows.filter(r=>r.total>=4).sort((x,y)=>(x.p||0)-(y.p||0))[0];
+
+  return `
+  <div class="statgrid">
+    <div class="stat"><div class="v">${vAll.length}</div><div class="k">單字總數</div></div>
+    <div class="stat"><div class="v">${mastered}<span style="font-size:15px;color:var(--ink-faint)">/${vAll.length}</span></div><div class="k">已掌握</div></div>
+    <div class="stat"><div class="v">${streak()}<span style="font-size:15px"> 天</span></div><div class="k">連續學習</div></div>
+    <div class="stat"><div class="v">${acc===null?'–':acc+'%'}</div><div class="k">測驗正確率</div></div>
+  </div>
+
+  <div class="card">
+    <div class="lbl">今日任務</div>
+    <div style="font-size:15px">
+      ${dueN>0 ? '📮 有 <b>'+dueN+'</b> 張單字卡到期待複習' : '✅ 單字卡都複習完了'}
+      ${starW.length>0 ? '　·　收藏 <b>'+starW.length+'</b> 張' : ''}
+    </div>
+    <div class="today-acts">
+      <button class="btn primary small" data-act="goVocab">複習單字卡</button>
+      <button class="btn ghost small" data-act="goQuiz">開始測驗</button>
+    </div>
+    ${weak ? '<div class="callout">📌 目前最弱的主題是「<b>'+esc(weak.t.name)+'</b>」（掌握度 '+(weak.p||0)+'%）——<button style="color:var(--pine);font-weight:700;text-decoration:underline" data-act="goVocabTheme" data-t="'+weak.t.key+'">練這個主題</button></div>':''}
+  </div>
+
+  <div class="card">
+    <div class="lbl">各主題掌握度</div>
+    ${rows.map(r=>{
+      const p=r.p, cls=p===null?'':(p<40?'low':p<75?'mid':'');
+      return '<div class="catrow"><div class="nm">'+esc(r.t.name)+'</div><div class="bar"><i class="'+cls+'" style="width:'+(p||0)+'%"></i></div><div class="pc">'+(p===null?'尚無資料':p+'%（共'+r.total+'）')+'</div></div>';
+    }).join('')}
+  </div>
+
+  <div class="card">
+    <div class="lbl">紀錄備份</div>
+    <p class="muted" style="font-size:13.5px;margin:0 0 10px">學習紀錄存在這個瀏覽器的 localStorage。換裝置或怕遺失時，可匯出 JSON 保存。</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn ghost small" data-act="expProg">匯出紀錄</button>
+      <button class="btn ghost small" data-act="impProgShow">匯入紀錄</button>
+    </div>
+    ${ui.backupShow?`<div style="margin-top:10px"><textarea id="bk-ta" placeholder="貼上先前匯出的 JSON"></textarea><div style="margin-top:8px"><button class="btn primary small" data-act="impProgDo">確認匯入（覆蓋現有紀錄）</button></div></div>`:''}
+    <div id="bk-msg"></div>
+  </div>`;
+}
+
+/* ── 單字卡 ── */
+function vDueList(){
+  return allV().filter(w=>{
+    if(ui.vocab.theme!=='all' && w.theme!==ui.vocab.theme) return false;
+    const s=store.vsrs[w.id]; return !s || s.due<=today();
+  });
+}
+function vBrowseList(){
+  return allV().filter(w=>ui.vocab.theme==='all'||w.theme===ui.vocab.theme);
+}
+function buildVQueue(){
+  ui.vocab.queue = shuffle(vDueList()).map(w=>w.id);
+  ui.vocab.idx=0; ui.vocab.flip=false; ui.vocab.done=0;
+}
+function rVocab(){
+  const V=ui.vocab;
+  const themes = [{key:'all',name:'全部主題'}].concat(THEMES);
+  const chips = '<div class="chiprow" style="margin-bottom:12px">'+themes.map(t=>'<button class="fchip '+(V.theme===t.key?'on':'')+'" data-act="vTheme" data-t="'+t.key+'">'+t.name+'</button>').join('')+'</div>';
+  const modeSel = '<div class="v-top"><div class="chiprow">'+
+    '<button class="fchip '+(V.mode==='due'?'on':'')+'" data-act="vMode" data-m="due">到期複習</button>'+
+    '<button class="fchip '+(V.mode==='browse'?'on':'')+'" data-act="vMode" data-m="browse">自由瀏覽</button>'+
+    '</div><div class="faint" style="font-size:13px">間隔重複：答「記得」的字會隔越來越久才再出現</div></div>';
+
+  if(V.mode==='browse'){
+    const list=vBrowseList();
+    if(!list.length) return chips+modeSel+'<div class="card empty">此主題還沒有單字</div>';
+    if(V.browseIdx>=list.length) V.browseIdx=0;
+    const w=list[V.browseIdx];
+    return chips+modeSel+fcHtml(w)+`
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <button class="btn ghost small" data-act="vPrev">← 上一張</button>
+        <span class="faint" style="font-variant-numeric:tabular-nums">${V.browseIdx+1} / ${list.length}</span>
+        <button class="btn ghost small" data-act="vNext">下一張 →</button>
+      </div>`;
+  }
+
+  /* 到期複習模式 */
+  if(!V.queue.length && !V.done) buildVQueue();
+  if(V.idx>=V.queue.length){
+    return chips+modeSel+`<div class="card empty" style="padding:48px 16px">
+      <div style="font-size:40px;margin-bottom:8px">🎉</div>
+      <div style="font-size:17px;font-weight:700;color:var(--ink)">今天的到期單字複習完畢</div>
+      <p class="muted" style="font-size:14px">共複習 ${V.done} 張。想加練可切到「自由瀏覽」。</p>
+      <button class="btn ghost small" data-act="vRebuild">重新檢查到期卡</button>
+    </div>`;
+  }
+  const w = allV().find(x=>x.id===V.queue[V.idx]);
+  if(!w){ V.idx++; return rVocab(); }
+  const s=vsrs(w.id);
+  return chips+modeSel+`
+    <div class="v-top" style="margin-bottom:8px">
+      <span class="faint" style="font-variant-numeric:tabular-nums">第 ${V.done+1} 張 · 剩 ${V.queue.length-V.idx} 張</span>
+      <span class="boxdots" title="熟練度（盒 ${s.box}/4）">${[0,1,2,3,4].map(i=>'<i class="'+(i<=s.box&&s.seen?'f':'')+'"></i>').join('')}</span>
+    </div>
+    ${fcHtml(w)}
+    ${V.flip
+      ? `<div class="grade">
+          <button class="g0" data-act="vGrade" data-g="0">不熟<small>今天再出現</small></button>
+          <button class="g1" data-act="vGrade" data-g="1">有點忘<small>明天再看</small></button>
+          <button class="g2" data-act="vGrade" data-g="2">記得<small>隔 ${SRS_IV[Math.min(4,s.box+1)]} 天</small></button>
+        </div>`
+      : '<div style="text-align:center"><button class="btn primary" data-act="vFlip">翻面看解釋</button></div>'}
+  `;
+}
+function fcHtml(w){
+  const s=store.vsrs[w.id];
+  const star = s&&s.star;
+  const flip = ui.vocab.flip;
+  const exHtml = (()=>{
+    let h=esc(w.example);
+    try{ const firstWord=w.word.split(/[\s(/]/)[0]; const re=new RegExp('\\b('+escReg(firstWord)+'\\w*)','i'); h=h.replace(re,'<b>$1</b>'); }catch(e){}
+    return h;
+  })();
+  return `<div class="fc ${flip?'flip':''}">
+    <div class="fc-inner">
+      <button class="face" data-act="vFlip" aria-label="翻面">
+        <div class="top"><span class="tag ${w.freq==='極高頻'?'brass':''}">${esc(w.freq)}</span>${SPEECH_OK?'<span class="speakbtn" data-act="speakWord" data-text="'+esc(w.word)+'" role="button" tabindex="0" aria-label="發音" title="發音">🔊</span>':''}<span class="starbtn ${star?'on':''}" data-act="vStar" data-id="${esc(w.id)}" role="button" tabindex="0" aria-label="收藏">${star?'★':'☆'}</span></div>
+        <div class="fc-word">${esc(w.word)}</div>
+        <div class="fc-pos">${esc(w.pos)}</div>
+        <div class="fc-hint">點擊翻面</div>
+      </button>
+      <button class="face back" data-act="vFlip" aria-label="翻回">
+        <div class="top"><span class="fc-word-sm">${esc(w.word)} <span class="fc-pos" style="font-size:14px">${esc(w.pos)}</span></span>${SPEECH_OK?'<span class="speakbtn" data-act="speakWord" data-text="'+esc(w.word)+'" role="button" tabindex="0" aria-label="發音" title="發音">🔊</span>':''}<span class="starbtn ${star?'on':''}" data-act="vStar" data-id="${esc(w.id)}" role="button" tabindex="0" aria-label="收藏">${star?'★':'☆'}</span></div>
+        <div class="fc-meaning">${esc(w.meaning)}</div>
+        <div class="fc-ex">${exHtml}${SPEECH_OK?'<span class="speakbtn" data-act="speakEx" data-text="'+esc(w.example)+'" role="button" tabindex="0" aria-label="唸例句" title="唸例句">🔊</span>':''}</div>
+        <div class="fc-exzh">${esc(w.exampleZh)}</div>
+        ${w.tip?'<div class="fc-tip">💡 '+esc(w.tip)+'</div>':''}
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ── 測驗（由 V_DATA 自動生成四選一） ── */
+function buildQuiz(){
+  const Q=ui.quiz;
+  let pool = allV().filter(w=>Q.theme==='all'||w.theme===Q.theme);
+  if(Q.src==='wrong') pool = pool.filter(w=>{const s=store.qstats[w.id]; return s&&s.lw;});
+  if(pool.length<4){ Q.list=[]; return; }
+  const picked = shuffle(pool).slice(0, Math.min(Q.count, pool.length));
+  Q.list = picked.map((w,i)=>makeQuestion(w, pool, i));
+  Q.idx=0; Q.picked=null; Q.session=[];
+}
+function makeQuestion(w, pool, seedIdx){
+  const modes = ['fr2zh','zh2fr','blank'];
+  const mode = Q_MODE_FIXED(seedIdx, w);
+  let stem, correctText, distractorSrc;
+  if(mode==='fr2zh'){
+    stem = w.word;
+    correctText = w.meaning;
+    distractorSrc = pool.filter(x=>x.id!==w.id).map(x=>x.meaning);
+  } else if(mode==='zh2fr'){
+    stem = w.meaning;
+    correctText = w.word;
+    distractorSrc = pool.filter(x=>x.id!==w.id).map(x=>x.word);
+  } else {
+    // blank: 例句挖空
+    const firstWord = w.word.split(/[\s(/]/)[0];
+    let re;
+    try{ re = new RegExp('\\b('+escReg(firstWord)+'\\w*)','i'); }catch(e){ re=null; }
+    stem = re && re.test(w.example) ? w.example.replace(re,'______') : w.example.replace(firstWord,'______');
+    correctText = w.word;
+    distractorSrc = pool.filter(x=>x.id!==w.id).map(x=>x.word);
+  }
+  // 同主題優先干擾項
+  const sameTheme = pool.filter(x=>x.id!==w.id && x.theme===w.theme);
+  let distractPool = sameTheme.length>=3 ? sameTheme : pool.filter(x=>x.id!==w.id);
+  let distractTexts = (mode==='zh2fr'||mode==='blank') ? distractPool.map(x=>x.word) : distractPool.map(x=>x.meaning);
+  distractTexts = Array.from(new Set(distractTexts.filter(t=>t && t!==correctText)));
+  const distractors = seededShuffle(distractTexts, w.id+'-d').slice(0,3);
+  while(distractors.length<3){ distractors.push('（無適合干擾項）'); }
+  const options = seededShuffle([correctText].concat(distractors), w.id+'-o');
+  const answer = options.indexOf(correctText);
+  return {id:w.id, wordId:w.id, mode, stem, options, answer, word:w};
+}
+function Q_MODE_FIXED(i, w){
+  // 確定性分配題型：依 id 字元碼決定，讓同一單字每次生成同一題型
+  let seed=0; for(let k=0;k<w.id.length;k++) seed += w.id.charCodeAt(k);
+  const modes=['fr2zh','zh2fr','blank'];
+  return modes[seed%3];
+}
+function rQuiz(){
+  const Q=ui.quiz;
+  if(Q.stage==='setup') return rQuizSetup();
+  if(Q.stage==='run') return rQuizRun();
+  return rQuizSummary();
+}
+function rQuizSetup(){
+  const Q=ui.quiz;
+  const themes=[{key:'all',name:'全部主題'}].concat(THEMES);
+  return `
+  <div class="card">
+    <div class="lbl">選擇主題</div>
+    <div class="chiprow">${themes.map(t=>'<button class="fchip '+(Q.theme===t.key?'on':'')+'" data-act="qTheme" data-t="'+t.key+'">'+t.name+'</button>').join('')}</div>
+    <div class="hr"></div>
+    <div class="lbl">題數</div>
+    <div class="chiprow">${[10,15,20,30].map(n=>'<button class="fchip '+(Q.count===n?'on':'')+'" data-act="qCount" data-n="'+n+'">'+n+' 題</button>').join('')}</div>
+    <div class="hr"></div>
+    <div class="lbl">題型</div>
+    <p class="muted" style="font-size:13.5px;margin:0">混合出題：法→中選義、中→法選字、例句填空，三種類型隨機交錯。</p>
+    <div style="margin-top:18px"><button class="btn primary" data-act="qStart">開始測驗</button></div>
+    <p class="setup-note">選項會用同主題單字當干擾項，答案位置以固定規則洗牌，避免集中在同一位置。</p>
+  </div>`;
+}
+function rQuizRun(){
+  const Q=ui.quiz;
+  if(!Q.list.length) buildQuiz();
+  if(!Q.list.length) return '<div class="card empty">此主題單字量不足以出題（至少需要 4 個），請換一個主題。<div style="margin-top:12px"><button class="btn ghost small" data-act="qBackSetup">回設定</button></div></div>';
+  if(Q.idx>=Q.list.length){ Q.stage='summary'; return rQuizSummary(); }
+  const q = Q.list[Q.idx];
+  const modeLabel = {fr2zh:'法→中　選出正確中文意思', zh2fr:'中→法　選出正確法文單字', blank:'例句填空　選出正確單字'}[q.mode];
+  const answered = Q.picked!=null;
+  return `
+  <div class="prog"><i style="width:${Math.round(Q.idx/Q.list.length*100)}%"></i></div>
+  <div class="card">
+    <div class="q-head"><span class="tag">${modeLabel}</span><span class="faint" style="font-size:13px">${Q.idx+1} / ${Q.list.length}</span></div>
+    <div class="q-sent">${esc(q.stem)}</div>
+    <div class="opts">
+      ${q.options.map((opt,i)=>{
+        let cls='opt';
+        if(answered){
+          if(i===q.answer) cls+=' correct';
+          else if(i===Q.picked) cls+=' wrong';
+          else cls+=' dim';
+        }
+        return '<button class="'+cls+'" data-act="qPick" data-i="'+i+'" '+(answered?'disabled':'')+'><span class="abc">'+ABC[i]+'</span><span>'+esc(opt)+'</span></button>';
+      }).join('')}
+    </div>
+    ${answered ? `
+      <div class="verdict ${Q.picked===q.answer?'ok':'no'}">${Q.picked===q.answer?'✅ 答對了':'❌ 答錯了'}</div>
+      <div class="faint" style="font-size:14px">${esc(q.word.word)}　${esc(q.word.pos)}　${esc(q.word.meaning)}</div>
+      <div class="fc-exzh" style="margin-top:4px">${esc(q.word.example)}（${esc(q.word.exampleZh)}）</div>
+      <div class="q-foot">
+        <span></span>
+        <button class="btn primary small" data-act="qNext">${Q.idx+1>=Q.list.length?'查看結果':'下一題'}</button>
+      </div>
+    ` : ''}
+  </div>`;
+}
+function rQuizSummary(){
+  const Q=ui.quiz;
+  const total=Q.session.length;
+  const correct=Q.session.filter(s=>s.ok).length;
+  return `
+  <div class="card sum-score">
+    <div class="lbl">測驗結果</div>
+    <div class="big">${correct} / ${total}</div>
+    <p class="muted">正確率 ${pct(correct,total)}%</p>
+    <div class="today-acts" style="justify-content:center">
+      <button class="btn primary small" data-act="qRestart">再測一次</button>
+      <button class="btn ghost small" data-act="qBackSetup">換設定</button>
+    </div>
+  </div>`;
+}
+
+/* ── 收藏・錯題 ── */
+function rFav(){
+  const F=ui.fav;
+  const vAll=allV();
+  const starList = vAll.filter(w=>{const s=store.vsrs[w.id];return s&&s.star;});
+  const wrongList = vAll.filter(w=>{const s=store.qstats[w.id]; return s&&s.lw;});
+  const chips='<div class="chiprow" style="margin-bottom:14px">'+
+    '<button class="fchip '+(F.filter==='star'?'on':'')+'" data-act="favFilter" data-f="star">收藏 ('+starList.length+')</button>'+
+    '<button class="fchip '+(F.filter==='wrong'?'on':'')+'" data-act="favFilter" data-f="wrong">錯題本 ('+wrongList.length+')</button>'+
+    '</div>';
+  const list = F.filter==='star' ? starList : wrongList;
+  if(!list.length) return chips+'<div class="card empty">'+(F.filter==='star'?'還沒有收藏的單字。到單字卡點 ☆ 收藏。':'還沒有錯題紀錄。做幾次測驗答錯後會出現在這裡。')+'</div>';
+  return chips + list.map(w=>{
+    const s=store.qstats[w.id];
+    return `<div class="fav-item">
+      <div class="fav-meta">
+        <span class="tag">${esc(w.themeName||w.theme)}</span>
+        <span class="tag diff">${esc(w.freq)}</span>
+        <span class="sp">${SPEECH_OK?'<span class="speakbtn" data-act="speakWord" data-text="'+esc(w.word)+'" role="button" tabindex="0" aria-label="發音">🔊</span>':''}<span class="starbtn ${store.vsrs[w.id]&&store.vsrs[w.id].star?'on':''}" data-act="vStar" data-id="${esc(w.id)}" role="button" tabindex="0">${store.vsrs[w.id]&&store.vsrs[w.id].star?'★':'☆'}</span></span>
+      </div>
+      <div class="wordrow"><span class="w">${esc(w.word)}</span><span class="m">${esc(w.pos)}　${esc(w.meaning)}</span></div>
+      <div class="fc-exzh">${esc(w.example)}（${esc(w.exampleZh)}）</div>
+      ${s?'<div class="faint" style="font-size:12.5px;margin-top:6px">答對 '+s.c+' / 共 '+s.a+' 次</div>':''}
+    </div>`;
+  }).join('');
+}
+
+/* ── 題庫（自建單字匯入） ── */
+function rBank(){
+  const B=ui.bank;
+  const customN = store.custom.vocab.length;
+  return `
+  <div class="card">
+    <div class="lbl">內建單字庫</div>
+    <p class="muted" style="font-size:14px">共 ${BUILTIN_VOCAB.length} 筆，涵蓋 ${THEMES.length} 個主題。${customN?('另有自建 '+customN+' 筆。'):''}</p>
+  </div>
+  <div class="card">
+    <div class="lbl">匯入自建單字（JSON）</div>
+    <p class="muted" style="font-size:13.5px">貼上符合格式的 JSON 陣列，會加進你的自建單字庫（不影響內建庫）。</p>
+    <textarea id="imp-ta" placeholder='[{"word":"Bonjour","pos":"n.m.","meaning":"你好","example":"Bonjour !","exampleZh":"你好！","theme":"salut","freq":"高頻"}]'></textarea>
+    <div style="margin-top:8px"><button class="btn primary small" data-act="impDo">匯入</button></div>
+    <div id="imp-msg">${B.msg?('<div class="imp-msg '+(B.msg.ok?'ok':'err')+'">'+esc(B.msg.text)+'</div>'):''}</div>
+    <details>
+      <summary>欄位格式說明</summary>
+      <pre class="schema">word (法文), pos (詞性), meaning (中文), example (法文例句),
+exampleZh (例句中譯), theme (主題key，見下), freq (極高頻|高頻|中頻)
+theme 可用值：${THEMES.map(t=>t.key).join(', ')}</pre>
+    </details>
+  </div>
+  ${customN?`<div class="card">
+    <div class="lbl">自建單字清單</div>
+    ${store.custom.vocab.map(w=>'<div class="bank-row"><span>'+esc(w.word)+'　'+esc(w.meaning)+'</span><button class="del" data-act="bankDel" data-id="'+esc(w.id)+'">刪除</button></div>').join('')}
+  </div>`:''}`;
+}
+
+/* =====================================================================
+   動作
+   ===================================================================== */
+const ACTIONS = {
+  nav(d){ ui.tab=d.tab; render(); },
+  goVocab(){ ui.tab='vocab'; render(); },
+  goVocabTheme(d){ ui.tab='vocab'; ui.vocab.theme=d.t; ui.vocab.mode='browse'; ui.vocab.browseIdx=0; render(); },
+  goQuiz(){ ui.tab='quiz'; ui.quiz.stage='setup'; render(); },
+
+  setAccent(d){ setAccent(d.a); },
+  speakWord(d){ speak(d.text); },
+  speakEx(d){ speak(d.text); },
+
+  vTheme(d){ ui.vocab.theme=d.t; ui.vocab.browseIdx=0; buildVQueue(); render(); },
+  vMode(d){ ui.vocab.mode=d.m; ui.vocab.flip=false; if(d.m==='due' && !ui.vocab.queue.length) buildVQueue(); render(); },
+  vFlip(){ ui.vocab.flip=!ui.vocab.flip; render(); },
+  vPrev(){ const list=vBrowseList(); ui.vocab.browseIdx=(ui.vocab.browseIdx-1+list.length)%list.length; ui.vocab.flip=false; render(); },
+  vNext(){ const list=vBrowseList(); ui.vocab.browseIdx=(ui.vocab.browseIdx+1)%list.length; ui.vocab.flip=false; render(); },
+  vRebuild(){ buildVQueue(); render(); },
+  vStar(d){ const s=vsrs(d.id); s.star=!s.star; save(); render(); },
+  vGrade(d){
+    const V=ui.vocab, id=V.queue[V.idx], s=vsrs(id), g=+d.g;
+    s.seen=(s.seen||0)+1;
+    touchToday();
+    if(g===0){ s.box=0; s.due=today(); }
+    else if(g===1){ s.box=Math.max(0,s.box-1<0?0:Math.min(s.box,1)); s.due=today()+1; }
+    else { s.box=Math.min(4,s.box+1); s.due=today()+SRS_IV[s.box]; }
+    save();
+    V.idx++; V.done++; V.flip=false;
+    render();
+  },
+
+  qTheme(d){ ui.quiz.theme=d.t; render(); },
+  qCount(d){ ui.quiz.count=+d.n; render(); },
+  qStart(){ ui.quiz.stage='run'; buildQuiz(); render(); },
+  qBackSetup(){ ui.quiz.stage='setup'; render(); },
+  qRestart(){ ui.quiz.stage='run'; buildQuiz(); render(); },
+  qPick(d){
+    const Q=ui.quiz, q=Q.list[Q.idx];
+    if(Q.picked!=null) return;
+    Q.picked=+d.i;
+    const ok = Q.picked===q.answer;
+    Q.session.push({id:q.id, ok});
+    const s = store.qstats[q.wordId] || (store.qstats[q.wordId]={a:0,c:0,lw:false});
+    s.a++; if(ok){ s.c++; s.lw=false; } else { s.lw=true; }
+    touchToday();
+    save();
+    render();
+  },
+  qNext(){ ui.quiz.idx++; ui.quiz.picked=null; render(); },
+
+  favFilter(d){ ui.fav.filter=d.f; render(); },
+
+  impDo(){
+    const ta=document.getElementById('imp-ta');
+    let data;
+    try{ data=JSON.parse(ta.value); }catch(e){ ui.bank.msg={ok:false,text:'JSON 格式錯誤：'+e.message}; render(); return; }
+    if(!Array.isArray(data)){ ui.bank.msg={ok:false,text:'必須是陣列'}; render(); return; }
+    let n=0;
+    data.forEach(it=>{
+      if(!it.word||!it.meaning) return;
+      const theme = THEMES.some(t=>t.key===it.theme)?it.theme:'quotidien';
+      const freq = ['極高頻','高頻','中頻'].includes(it.freq)?it.freq:'中頻';
+      store.custom.vocab.push({
+        id:'f-c'+(store.custom.seq++), theme, themeName:(THEMES.find(t=>t.key===theme)||{}).name,
+        word:it.word, pos:it.pos||'', meaning:it.meaning, example:it.example||'', exampleZh:it.exampleZh||'',
+        collocations:[], freq, tip:it.tip||''
+      });
+      n++;
+    });
+    save();
+    ui.bank.msg = n>0 ? {ok:true,text:'成功匯入 '+n+' 筆'} : {ok:false,text:'沒有符合格式的資料'};
+    render();
+  },
+  bankDel(d){
+    store.custom.vocab = store.custom.vocab.filter(w=>w.id!==d.id);
+    save(); render();
+  },
+
+  expProg(){
+    const blob = new Blob([JSON.stringify(store)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download='francais-progress-'+today()+'.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
+  impProgShow(){ ui.backupShow=true; render(); },
+  impProgDo(){
+    const ta=document.getElementById('bk-ta');
+    try{
+      const s=JSON.parse(ta.value);
+      if(!s||typeof s!=='object') throw new Error('格式錯誤');
+      store = Object.assign(defaults(), s);
+      save();
+      document.getElementById('bk-msg').innerHTML='<div class="imp-msg ok">匯入成功</div>';
+      render();
+    }catch(e){
+      document.getElementById('bk-msg').innerHTML='<div class="imp-msg err">匯入失敗：'+esc(e.message)+'</div>';
+    }
+  },
+};
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');
+  if(!el) return;
+  if(el.dataset.act==='vStar'||el.dataset.act==='speakWord'||el.dataset.act==='speakEx') e.stopPropagation();
+  const fn=ACTIONS[el.dataset.act];
+  if(fn){ e.preventDefault(); fn(el.dataset,el); }
+},true);
+
+const _voiceSelEl = document.getElementById('voicesel');
+if(_voiceSelEl){
+  _voiceSelEl.addEventListener('change', e=>{
+    const val = e.target.value;
+    try{ localStorage.setItem(VOICE_KEY, val); }catch(err){}
+    speak('Ceci est un essai de voix.');
+  });
+}
+
+_fillVoiceSel();
+render();
+</script>

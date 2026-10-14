@@ -1,6 +1,6 @@
 {
-  "name": "多益訓練場",
-  "short_name": "多益",
+  "name": "語言訓練場",
+  "short_name": "語言訓練場",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
