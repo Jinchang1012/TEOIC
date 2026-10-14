@@ -1,6 +1,6 @@
 {
-  "name": "語言訓練場",
-  "short_name": "語言訓練場",
+  "name": "語言學習",
+  "short_name": "語言學習",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

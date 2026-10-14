@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F5F4EE">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>語言訓練場</title>
+<title>語言學習</title>
 <style>
 :root{
   --paper:#F5F4EE; --card:#FFFFFF; --line:#E3E1D4; --line-soft:#EDEBDF;
@@ -69,8 +69,8 @@ details.hidden-box .mods{margin-top:8px}
 <body>
 <div id="app">
   <header class="masthead">
-    <div class="eyebrow">LANGUAGE TRAINING GROUND</div>
-    <h1>語言訓練場</h1>
+    <div class="eyebrow">LANGUAGE LEARNING</div>
+    <h1>語言學習</h1>
   </header>
   <section aria-labelledby="h-acct">
     <h2 id="h-acct">帳號連線</h2>
@@ -90,7 +90,6 @@ details.hidden-box .mods{margin-top:8px}
 (function(){
 'use strict';
 var HUB_SESSION_KEY = 'langhub_gd_session';
-var OLD_SESSION_KEY = 'toeic850_gd_session';
 var HUB_KEY = 'langhub_v1';
 var GD_WEB_CLIENT_ID = '1130644642-d627g1fmvg10bt3g8sh20nmk0guidc1v.apps.googleusercontent.com';
 var GD_SCOPES = 'openid email https://www.googleapis.com/auth/drive.appdata';
@@ -119,12 +118,7 @@ var busy = false;
 function loadSession(){
   var hub = readJSON(HUB_SESSION_KEY);
   if(!hub || typeof hub!=='object' || (!hub.accessToken && !hub.email)){
-    var old = readJSON(OLD_SESSION_KEY);
-    if(old && typeof old==='object' && (old.accessToken || old.email)){
-      hub = {accessToken:old.accessToken, expiresAt:old.expiresAt, email:old.email};
-      writeJSON(HUB_SESSION_KEY, hub);
-      writeJSON(OLD_SESSION_KEY, {fileId: old.fileId || undefined});
-    }else{ hub = null; }
+    hub = null;
   }
   session = hub;
 }

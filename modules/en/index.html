@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F5F4EE">
-<title>多益訓練場</title>
+<title>語言學習</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2324513B'/%3E%3Ctext x='50' y='50' font-size='46' text-anchor='middle' dominant-baseline='central' fill='white' font-family='sans-serif'%3E%F0%9F%8E%AF%3C/text%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -25,6 +25,11 @@
     --clay-tint:#301B14; --clay-line:#4E2E22;
   }
 }
+/* 組句分頁：句子引擎主題對應 */
+.se-root{--se-bg:var(--card);--se-fg:var(--ink);--se-accent:var(--pine);--se-ok:var(--pine-mid);--se-err:var(--clay);--se-muted:var(--ink-soft)}
+.sent-kinds{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.sent-kinds button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14px;font-weight:600;color:var(--ink-soft)}
+.sent-kinds button.on{background:var(--pine-deep);border-color:var(--pine-deep);color:#fff}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
 button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
@@ -286,8 +291,8 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
   <header class="masthead">
     <div>
       <a href="../../index.html" class="btn ghost small" id="homelink" style="margin-bottom:8px">← 首頁</a>
-      <div class="eyebrow">TOEIC TRAINING GROUND</div>
-      <h1>訓練場</h1>
+      <div class="eyebrow">ENGLISH</div>
+      <h1>英文學習</h1>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
       <span id="cs-chip-slot"></span>
@@ -300,6 +305,10 @@ pre.schema{background:var(--paper);border:1px solid var(--line);border-radius:10
   <main id="view"><div class="empty">載入中…</div></main>
 </div>
 
+<link rel="stylesheet" href="../shared/sentence-engine.css">
+<script src="../shared/sentence-engine.js"></script>
+<script src="data/sentences.js"></script>
+<script src="data/questions.js"></script>
 <script>
 'use strict';
 /* =====================================================================
@@ -334,16 +343,24 @@ const THEMES = [
   {key:'pattern', name:'句型'},
 ];
 const SRS_IV = [0,1,3,7,14];          // Leitner 盒 0-4 的複習間隔（天）
-const LS_KEY = 'toeic850_v1';
+const LS_KEY = 'langhub_en_v1';
 
 /* ── 儲存層 ── */
 function probeStorage(){
-  try{ localStorage.setItem('toeic850_probe','1'); localStorage.removeItem('toeic850_probe'); return true; }
+  try{ localStorage.setItem('langhub_en_probe','1'); localStorage.removeItem('langhub_en_probe'); return true; }
   catch(e){ return false; }
 }
 let storageOK = probeStorage();
 let corruptRaw = null;     // load() 解析失敗時暫存的原始字串，供「下載損毀原始資料」使用
-function defaults(){ return {qstats:{}, vsrs:{}, custom:{questions:[],vocab:[],reading:[],seq:1}, history:{}, meta:{lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50}}; }
+/* 補齊組句欄位（舊備份／舊存檔沒有 ssrs、meta.sentNew） */
+function normSentFields(s){
+  if(!s.ssrs || typeof s.ssrs!=='object' || Array.isArray(s.ssrs)) s.ssrs={};
+  if(!s.meta || typeof s.meta!=='object') s.meta={};
+  const n=s.meta.sentNew;
+  if(!n || typeof n!=='object' || typeof n.day!=='number' || typeof n.count!=='number') s.meta.sentNew={day:0,count:0};
+  return s;
+}
+function defaults(){ return {qstats:{}, vsrs:{}, ssrs:{}, custom:{questions:[],vocab:[],reading:[],seq:1}, history:{}, meta:{lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50,sentNew:{day:0,count:0}}}; }
 let store = load();
 function load(){
   let raw=null;
@@ -364,6 +381,7 @@ function load(){
       if(s.meta.reminderSnoozedUntil===undefined) s.meta.reminderSnoozedUntil=null;
       if(!s.meta.dailyCap) s.meta.dailyCap=50;
     }
+    normSentFields(s);
     return s;
   }catch(e){ corruptRaw = raw; return defaults(); }
 }
@@ -441,7 +459,7 @@ function escReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
 
 /* ── 發音（瀏覽器內建 speechSynthesis，無外部資源） ── */
 const SPEECH_OK = (typeof window!=='undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance!=='undefined');
-const ACCENT_KEY = 'toeic850_accent';
+const ACCENT_KEY = 'langhub_en_accent';
 let ACCENT = 'us';
 try{ const a = localStorage.getItem(ACCENT_KEY); if(a==='us'||a==='uk') ACCENT=a; }catch(e){}
 function setAccent(a){ ACCENT = (a==='uk') ? 'uk' : 'us'; try{ localStorage.setItem(ACCENT_KEY, ACCENT); }catch(e){} }
@@ -484,9 +502,9 @@ function _fillVoiceSel(){
   sel.style.display = '';
   if(cur==='auto') sel.value='auto';
 }
-const VOICE_KEY = 'toeic850_voice';
+const VOICE_KEY = 'langhub_en_voice';
 function _savedVoiceName(){ try{ return localStorage.getItem(VOICE_KEY) || 'auto'; }catch(e){ return 'auto'; } }
-const RATE_KEY = 'toeic850_rate';
+const RATE_KEY = 'langhub_en_rate';
 const RATE_STEPS = [0.8, 0.95, 1.1];
 function _rateLabel(r){ return r===0.8?'慢':r===1.1?'快':'正常'; }
 function _savedRate(){
@@ -499,7 +517,7 @@ function _updateRateBtn(){
   const b = document.getElementById('ratebtn');
   if(b) b.textContent = _rateLabel(_savedRate());
 }
-const NOEN_TOAST_KEY = 'toeic850_noenvoice_toast_shown';
+const NOEN_TOAST_KEY = 'langhub_en_noenvoice_toast_shown';
 let _noEnVoice = false;
 let _toastTimer = null;
 function showToast(msg){
@@ -597,6 +615,7 @@ const ui = {
   read:{stage:'list', filter:'all', setId:null, idx:0, answers:{}, showTrans:false, startTime:null, elapsedFinal:null},
   fav:{filter:'star', open:new Set()},
   bank:{msg:null},
+  sentKind:'mix', sentRun:false,
   backupShow:false,
   storageBannerClosed:false,
 };
@@ -610,6 +629,7 @@ const TABS = [
   {key:'quiz',     name:'Part 5',   icon:'✏️'},
   {key:'read',     name:'閱讀 6・7', icon:'📖'},
   {key:'fav',      name:'收藏・錯題', icon:'⭐'},
+  {key:'sent',     name:'組句',      icon:'🧩'},
   {key:'bank',     name:'題庫',      icon:'🗂'},
 ];
 function renderGlobalBanner(){
@@ -673,11 +693,77 @@ function render(){
     const badge = (t.key==='vocab' && dueN>0) ? '<span class="n">'+dueN+'</span>' : '';
     return '<button role="tab" data-act="nav" data-tab="'+t.key+'" class="'+(ui.tab===t.key?'on':'')+'" aria-selected="'+(ui.tab===t.key)+'"><span class="tab-ic">'+t.icon+'</span><span class="tab-tx">'+t.name+badge+'</span></button>';
   }).join('');
+  /* 組句進行中：Drive 同步等背景 render() 不可重畫 #view，否則會清掉引擎 DOM */
+  if(sentEngine && ui.tab==='sent'){ syncTabsSafeArea(); return; }
+  if(ui.tab!=='sent') sentDestroy();
   const v = document.getElementById('view');
-  v.innerHTML = ({home:rHome, vocab:rVocab, quiz:rQuiz, read:rRead, fav:rFav, bank:rBank}[ui.tab])();
+  v.innerHTML = ({home:rHome, vocab:rVocab, quiz:rQuiz, read:rRead, fav:rFav, sent:rSent, bank:rBank}[ui.tab])();
   v.scrollTop=0;
+  sentMount();
   syncTabsSafeArea();
   ensureBottomActionsVisible();
+}
+
+/* ── 組句（句子練習引擎，規格 modules/shared/SPEC-sentence-engine.md）── */
+const SENT_KINDS = [['order','積木排序'],['cloze','骨架挖空'],['twoWords','兩字造句'],['parse','問句拆解'],['mix','混合']];
+const SENT_DAILY_NEW = 15, SENT_SIZE = 10;
+let sentEngine = null;
+function sentItems(){ return {sentences: window.LANGHUB_EN_SENTENCES||[], questions: window.LANGHUB_EN_QUESTIONS||[]}; }
+function sentReady(){ const it=sentItems(); return typeof SentenceEngine!=='undefined' && (it.sentences.length>0 || it.questions.length>0); }
+function sentKinds(k){ return k==='mix' ? ['order','cloze','twoWords','parse'] : [k]; }
+function sentNewMeta(){
+  normSentFields(store);
+  const n=store.meta.sentNew;
+  if(n.day!==today()){ n.day=today(); n.count=0; }
+  return n;
+}
+function sentDueN(){
+  if(!sentReady()) return 0;
+  return SentenceEngine.due(sentItems(), id=>store.ssrs[id], today());
+}
+function sentDestroy(){
+  if(sentEngine){ try{ sentEngine.destroy(); }catch(e){} sentEngine=null; }
+  ui.sentRun=false;
+}
+function rSent(){
+  if(!sentReady()) return '<div class="card"><div class="empty">題庫未載入（缺少 data/sentences.js、data/questions.js 或引擎檔）。</div></div>';
+  const nm=sentNewMeta();
+  const kindName=(SENT_KINDS.find(k=>k[0]===ui.sentKind)||SENT_KINDS[4])[1];
+  if(ui.sentRun){
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div class="lbl" style="margin:0">組句・${esc(kindName)}</div>
+      <button class="btn ghost small" data-act="sentQuit">結束本輪</button></div>
+      <div id="se-mount" style="margin-top:10px"></div>
+      <div id="se-after"></div>
+    </div>`;
+  }
+  return `<div class="card">
+    <div class="lbl">組句練習</div>
+    <div class="sent-kinds">${SENT_KINDS.map(k=>'<button class="'+(ui.sentKind===k[0]?'on':'')+'" data-act="sentKind" data-k="'+k[0]+'">'+k[1]+'</button>').join('')}</div>
+    <div style="font-size:15px;margin:6px 0 12px">到期 <b>${sentDueN()}</b>・今日新題 <b>${nm.count}</b>/${SENT_DAILY_NEW}</div>
+    <button class="btn primary" data-act="sentStart">開始一輪（${SENT_SIZE} 題）</button>
+  </div>`;
+}
+function sentMount(){
+  if(ui.tab!=='sent' || !ui.sentRun || sentEngine) return;
+  const m=document.getElementById('se-mount');
+  if(!m || !sentReady()) return;
+  const nm=sentNewMeta();
+  sentEngine = SentenceEngine.create({
+    mount:m, lang:'en', items:sentItems(), kinds:sentKinds(ui.sentKind),
+    size:SENT_SIZE, dailyNew:Math.max(0, SENT_DAILY_NEW-nm.count),
+    speak:t=>speak(t),
+    getState:id=>store.ssrs[id],
+    /* 引擎在 onResult 之前就先 setState，所以「新題」要在這裡（尚無紀錄）判定 */
+    setState:(id,st)=>{ if(!store.ssrs[id]) sentNewMeta().count++; store.ssrs[id]=st; },
+    onResult:r=>{ markActive(r.ok); store.meta.answersSinceBackup=(store.meta.answersSinceBackup||0)+1; save(); },
+    onDone:()=>{
+      const a=document.getElementById('se-after'); if(!a) return;
+      a.innerHTML='<div class="today-acts"><button class="btn primary small" data-act="sentStart">再來一輪</button><button class="btn ghost small" data-act="sentHome">回總覽</button></div>';
+    },
+    today:today
+  });
+  sentEngine.start();
 }
 
 /* ── 總覽 ── */
@@ -689,6 +775,7 @@ function rHome(){
   const mastered = vAll.filter(w=>{const s=store.vsrs[w.id]; return s && s.box>=3;}).length;
   const dueN = vAll.filter(w=>{const s=store.vsrs[w.id]; return !s || s.due<=today();}).length;
   const wrongN = qs.filter(q=>{const s=store.qstats[q.id]; return s && s.lw;}).length;
+  const sentDue = sentDueN();
   const isFresh = Object.keys(store.vsrs).length===0 && Object.keys(store.history).length===0;
   const cap = (store.meta && store.meta.dailyCap) || 50;
   const todayBatch = Math.min(dueN, cap);
@@ -735,11 +822,13 @@ function rHome(){
         ? '👋 單字卡會依記憶排程逐步出現，新手建議先從一批開始。'
         : (dueN>0 ? '📮 今日先複習 <b>'+todayBatch+'</b> 張'+(dueN>cap?'（累積到期 '+dueN+' 張）':'')+(estMin>0?'　·　約 '+estMin+' 分鐘':'') : '✅ 單字卡都複習完了')
       }
+      ${sentReady() ? '<div style="margin-top:6px">🧩 組句到期 <b>'+sentDue+'</b> 題</div>' : ''}
       ${!isFresh && wrongN>0 ? '　·　錯題本還有 <b>'+wrongN+'</b> 題待消滅' : ''}
     </div>
     <div class="today-acts">
       <button class="btn primary small" data-act="goVocab">複習單字卡</button>
       <button class="btn ghost small" data-act="goQuizSmart">練 10 題文法</button>
+      ${sentReady()?'<button class="btn ghost small" data-act="goSent">練 10 題組句</button>':''}
       ${wrongN>0?'<button class="btn ghost small" data-act="goWrong">只練錯題</button>':''}
     </div>
     ${weak ? '<div class="callout">📌 目前最弱的考點是「<b>'+esc(weak.c.name)+'</b>」（正確率 '+weak.p+'%）——<button style="color:var(--pine);font-weight:700;text-decoration:underline" data-act="goCat" data-cat="'+weak.c.key+'">針對它練一輪</button></div>':''}
@@ -835,8 +924,8 @@ function diagBlock(){
 function parseBackupInput(raw){
   const obj = JSON.parse(raw);
   if(!obj || typeof obj!=='object') throw new Error('不是有效的紀錄檔');
-  if(obj.store && typeof obj.store==='object' && 'qstats' in obj.store) return obj.store;
-  if('qstats' in obj) return obj;
+  if(obj.store && typeof obj.store==='object' && 'qstats' in obj.store) return normSentFields(obj.store);
+  if('qstats' in obj) return normSentFields(obj);
   throw new Error('不是有效的紀錄檔');
 }
 /* === MERGESTORE_BEGIN ===
@@ -854,6 +943,21 @@ function mergeStore(local, incoming){
     else winner=(inc.box||0)>(loc.box||0)?inc:loc;
     local.vsrs[id] = Object.assign({}, winner, {star: !!(loc.star||inc.star)});
     vN++;
+  }
+  normSentFields(local);
+  const incS = (incoming.ssrs && typeof incoming.ssrs==='object') ? incoming.ssrs : {};
+  for(const id in incS){
+    const inc=incS[id], loc=local.ssrs[id];
+    if(!inc || typeof inc!=='object') continue;
+    if(!loc){ local.ssrs[id]=inc; continue; }
+    const sA=loc.seen||0, sB=inc.seen||0;
+    local.ssrs[id] = sB>sA ? inc : (sA>sB ? loc : ((inc.box||0)>(loc.box||0)?inc:loc));
+  }
+  const incSN = (incoming.meta && incoming.meta.sentNew) || null;
+  if(incSN && typeof incSN.day==='number'){
+    const ln = local.meta.sentNew;
+    if(incSN.day>ln.day) local.meta.sentNew={day:incSN.day,count:incSN.count||0};
+    else if(incSN.day===ln.day) ln.count=Math.max(ln.count,incSN.count||0);
   }
   const incQ = incoming.qstats||{};
   for(const id in incQ){
@@ -886,7 +990,7 @@ function mergeStore(local, incoming){
 }
 /* === MERGESTORE_END === */
 function makeBackupPayload(){
-  return {app:'toeic850', ver:1, exportedAt:new Date().toISOString(), store:store};
+  return {app:'langhub_en', ver:1, exportedAt:new Date().toISOString(), store:store};
 }
 function downloadJSON(obj, filenamePrefix, ext){
   const blob = new Blob([typeof obj==='string'?obj:JSON.stringify(obj)], {type: ext==='txt'?'text/plain':'application/json'});
@@ -1328,7 +1432,7 @@ const SCHEMA_EXAMPLE = [{
   keyWords:[{word:'be required to',pos:'phr.',meaning:'被要求做～',freq:'極高頻'},{word:'quarter',pos:'n.',meaning:'季度',freq:'高頻'}],
   pattern:{name:'be required to + V',note:'表「被要求、必須」，多益公告/規定情境高頻句型。',example:'Visitors are required to wear a badge at all times.'}
 }];
-const CLAUDE_PROMPT_TPL = '請幫我出 10 題多益 Part 5 題目（難度 700-850 分區間），或把我貼給你的題目轉檔。輸出成「850 訓練場」題庫 JSON 陣列，欄位格式：category（pos/verb/prep/conj/pron/verbal/collo/word 擇一）、question（空格用 ___）、options（4 個）、answer（正解索引 0-3）、difficulty（基礎/中階/進階）、translation、explanation（繁中詳解：解題線索→文法規則→為何是正解）、optionNotes（4 條，與選項同順序，說明各選項對/錯原因）、keyWords（題中高頻字：word/pos/meaning/freq）、pattern（可省略：name/note/example）。單字卡格式：word/pos/meaning/example/exampleZh/collocations（2-3 個）/freq（極高頻/高頻/中頻）/tip（可省略）、theme（office/biz/fin 擇一）。閱讀組（Part 6/7）格式：part（6 或 7）、title、genre、passages（[{label,text}]；Part 6 文章內空格用 [[1]]～[[4]] 標記）、questions（[{q（Part 7 才需要）,options（4 個）,answer（0-3）,explanation,optionNotes（可省略）,sentenceInsertion（可省略）}]）、translation（全文繁中翻譯）、keyWords。出好後我會貼到 App 的「題庫」分頁匯入。';
+const CLAUDE_PROMPT_TPL = '請幫我出 10 題多益 Part 5 題目（難度 700-850 分區間），或把我貼給你的題目轉檔。輸出成「語言學習」題庫 JSON 陣列，欄位格式：category（pos/verb/prep/conj/pron/verbal/collo/word 擇一）、question（空格用 ___）、options（4 個）、answer（正解索引 0-3）、difficulty（基礎/中階/進階）、translation、explanation（繁中詳解：解題線索→文法規則→為何是正解）、optionNotes（4 條，與選項同順序，說明各選項對/錯原因）、keyWords（題中高頻字：word/pos/meaning/freq）、pattern（可省略：name/note/example）。單字卡格式：word/pos/meaning/example/exampleZh/collocations（2-3 個）/freq（極高頻/高頻/中頻）/tip（可省略）、theme（office/biz/fin 擇一）。閱讀組（Part 6/7）格式：part（6 或 7）、title、genre、passages（[{label,text}]；Part 6 文章內空格用 [[1]]～[[4]] 標記）、questions（[{q（Part 7 才需要）,options（4 個）,answer（0-3）,explanation,optionNotes（可省略）,sentenceInsertion（可省略）}]）、translation（全文繁中翻譯）、keyWords。出好後我會貼到 App 的「題庫」分頁匯入。';
 
 function rBank(){
   const B=ui.bank;
@@ -1367,7 +1471,7 @@ function rBank(){
 
   <div class="card" style="background:var(--pine-tint);border-color:var(--pine-tint-line)">
     <div class="lbl" style="color:var(--pine)">另一條路：直接叫 Claude 加進內建題庫</div>
-    <p style="font-size:14px;margin:0">在 Claude Code 對話裡把題目貼上，說「<b>加進 850 訓練場</b>」，Claude 會讀取格式說明檔、轉檔加入內建題庫並重新發佈，這樣換瀏覽器也不會不見。</p>
+    <p style="font-size:14px;margin:0">在 Claude Code 對話裡把題目貼上，說「<b>加進語言學習</b>」，Claude 會讀取格式說明檔、轉檔加入內建題庫並重新發佈，這樣換瀏覽器也不會不見。</p>
   </div>`;
 }
 
@@ -1459,6 +1563,11 @@ function copyText(t,btn){
 const ACTIONS = {
   nav(d){ ui.tab=d.tab; if(d.tab==='vocab'){ buildVQueue(); } window.scrollTo(0,0); render(); },
   /* 總覽 */
+  sentKind(d){ sentDestroy(); ui.sentKind=d.k; render(); },
+  sentStart(){ sentDestroy(); ui.sentRun=true; render(); },
+  sentQuit(){ sentDestroy(); render(); },
+  sentHome(){ sentDestroy(); ui.tab='home'; window.scrollTo(0,0); render(); },
+  goSent(){ sentDestroy(); ui.tab='sent'; ui.sentKind='mix'; ui.sentRun=true; window.scrollTo(0,0); render(); },
   goVocab(){ ui.tab='vocab'; ui.vocab.mode='due'; buildVQueue(); render(); },
   goQuizSmart(){ ui.tab='quiz'; Object.assign(ui.quiz,{stage:'setup',cats:new Set(['all']),count:10,src:'smart'}); startQuiz(); },
   goWrong(){ ui.tab='quiz'; Object.assign(ui.quiz,{stage:'setup',cats:new Set(['all']),count:999,src:'wrong'}); startQuiz(); },
@@ -1471,12 +1580,12 @@ const ACTIONS = {
   },
   impProgShow(){ ui.backupShow=!ui.backupShow; render(); },
   dlBackup(){
-    downloadJSON(makeBackupPayload(),'toeic850-backup','json');
+    downloadJSON(makeBackupPayload(),'langhub-en-backup','json');
     store.meta.lastBackup=new Date().toISOString(); store.meta.answersSinceBackup=0;
     save(); render();
     const m=document.getElementById('bk-msg'); if(m)m.innerHTML='<div class="imp-msg ok">已下載備份檔。</div>';
   },
-  dlCorrupt(){ if(corruptRaw) downloadJSON(corruptRaw,'toeic850-corrupt','txt'); },
+  dlCorrupt(){ if(corruptRaw) downloadJSON(corruptRaw,'langhub-en-corrupt','txt'); },
   closeStorageBanner(){ ui.storageBannerClosed=true; render(); },
   closeBackupReminder(){
     if(!store.meta) store.meta={lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50};
@@ -1505,6 +1614,7 @@ const ACTIONS = {
         if(!store.meta || typeof store.meta!=='object') store.meta={lastSaved:null,lastBackup:null,answersSinceBackup:0,reminderSnoozedUntil:null,dailyCap:50};
         if(store.meta.reminderSnoozedUntil===undefined) store.meta.reminderSnoozedUntil=null;
         if(!store.meta.dailyCap) store.meta.dailyCap=50;
+        normSentFields(store);
         summary = '已覆蓋匯入現有紀錄。';
       }
       store.meta.answersSinceBackup = 0;
@@ -1798,8 +1908,8 @@ if(typeof window!=='undefined' && window.matchMedia){
    render() 與 Service Worker 註冊之後執行，確保不阻塞首次畫面渲染。 */
 const GD_WEB_CLIENT_ID = '1130644642-d627g1fmvg10bt3g8sh20nmk0guidc1v.apps.googleusercontent.com'; // GCP「Web 應用程式」類型 OAuth Client ID，需人工填入
 const GD_SCOPES = 'openid email https://www.googleapis.com/auth/drive.appdata';
-const GD_FILE_NAME = 'toeic850_state.json';
-const GD_SESSION_KEY = 'toeic850_gd_session'; // localStorage key，現只存 {fileId}（舊版含 accessToken/email，載入時一次性遷移到 HUB）
+const GD_FILE_NAME = 'langhub_en_state.json';
+const GD_SESSION_KEY = 'langhub_en_gd_session'; // localStorage key，現只存 {fileId}（舊版含 accessToken/email，載入時一次性遷移到 HUB）
 const HUB_SESSION_KEY = 'langhub_gd_session'; // 首頁殼層與各語言模組共用的登入 session：{accessToken, expiresAt, email}
 
 var GD = {  // var（非 let）：讓 _tests/gd-sync.test.js 用 vm contextify 時可從沙盒物件外部讀寫 GD 做斷言，行為與 let 等價
@@ -2399,7 +2509,7 @@ gdInit();
    render() 與 Service Worker 註冊之後執行，確保不阻塞首次畫面渲染。 */
 const SB_URL = 'https://rgieomgmprzmuxrvlogg.supabase.co';
 const SB_KEY = 'sb_publishable_rW-hFWaMYsyJv3-Cc9UK6Q_NomZjlo1';
-const CS_SESSION_KEY = 'toeic850_sb_session';
+const CS_SESSION_KEY = 'langhub_en_sb_session';
 
 let CS = {
   session: null,        // {access_token, refresh_token, expires_at(epoch秒), email, uid}

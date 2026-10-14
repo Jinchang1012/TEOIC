@@ -1,7 +1,7 @@
 /* 語言訓練場 Service Worker
  * 策略：network-first（有網路永遠拿最新版），失敗時回退 cache（離線可開）。
  */
-const CACHE_NAME = 'langhub-v2';
+const CACHE_NAME = 'langhub-v3';
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -10,7 +10,12 @@ const PRECACHE_URLS = [
   './icon-512.png',
   './modules.js',
   './modules/en/index.html',
-  './modules/fr/index.html'
+  './modules/fr/index.html',
+  './modules/es/index.html',
+  './modules/shared/sentence-engine.js',
+  './modules/shared/sentence-engine.css',
+  './modules/en/data/sentences.js',
+  './modules/en/data/questions.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -51,6 +56,7 @@ self.addEventListener('fetch', (event) => {
         const p = new URL(event.request.url).pathname;
         if(p.indexOf('/modules/en/') !== -1) return caches.match('./modules/en/index.html');
         if(p.indexOf('/modules/fr/') !== -1) return caches.match('./modules/fr/index.html');
+        if(p.indexOf('/modules/es/') !== -1) return caches.match('./modules/es/index.html');
         return caches.match('./index.html');
       }))
   );

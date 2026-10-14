@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F2EC">
+<title>西文訓練場</title>
+<style>
+:root{
+  --paper:#F6F2EC; --card:#FFFFFF; --line:#E6DED2; --line-soft:#EFE9DF;
+  --ink:#2B1F1B; --ink-soft:#6A5C55; --ink-faint:#9C9089;
+  --pine:#8c3b2f; --pine-deep:#5e2219; --pine-tint:#F6E9E5; --pine-mid:#b25a4a;
+  --brass:#A87B24; --brass-tint:#F7F0DC; --brass-line:#E3D5AC;
+  --ok:#2f6b4f; --ok-tint:#E6F0EA;
+  --clay:#C45A12; --clay-tint:#FBEBDD; --clay-line:#EBC9A8;
+  --radius:14px;
+  --sans:"Segoe UI","Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;padding:0;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible,details summary:focus-visible{outline:2px solid var(--pine);outline-offset:2px;border-radius:6px}
+#app{max-width:760px;margin:0 auto;padding:22px 16px 90px}
+
+/* 頂部 */
+.masthead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--ink-faint);font-weight:600}
+.masthead h1{margin:2px 0 0;font-size:32px;font-weight:800;letter-spacing:.01em}
+
+/* 分頁 */
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;margin-bottom:18px;overflow-x:auto}
+.tabs button{flex:1;padding:10px 8px;border-radius:999px;font-size:14px;font-weight:600;color:var(--ink-soft);white-space:nowrap;min-width:64px}
+.tabs button.on{background:var(--pine-deep);color:#fff}
+.tabs button .n{display:inline-block;margin-left:4px;font-size:11px;font-variant-numeric:tabular-nums;opacity:.75}
+.tabs button .tab-ic{display:none}
+.tabs button .tab-tx{display:inline}
+
+/* 通用 */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+.lbl{font-size:12px;letter-spacing:.26em;color:var(--ink-faint);font-weight:700;margin-bottom:8px}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px}
+.fchip{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;color:var(--ink-soft)}
+.fchip.on{background:var(--pine);border-color:var(--pine);color:#fff;font-weight:600}
+.voicesel{padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;color:var(--ink-soft);max-width:150px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 22px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none}
+.btn.primary{background:var(--pine);color:#fff}
+.btn.primary:hover{background:var(--pine-deep)}
+.btn.ghost{border:1.5px solid var(--line);color:var(--ink-soft);background:var(--card)}
+.btn.ghost:hover{border-color:var(--ink-faint)}
+.btn.small{padding:8px 14px;font-size:13.5px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.muted{color:var(--ink-soft)} .faint{color:var(--ink-faint)}
+.tagline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--pine-tint);color:var(--pine)}
+.tag.diff{background:var(--paper);color:var(--ink-soft);border:1px solid var(--line)}
+.tag.clay{background:var(--clay-tint);color:var(--clay)}
+.tag.brass{background:var(--brass-tint);color:var(--brass)}
+.empty{padding:36px 12px;text-align:center;color:var(--ink-faint)}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.callout{background:var(--brass-tint);border:1px solid var(--brass-line);border-radius:12px;padding:12px 16px;font-size:14.5px;margin-top:12px}
+
+/* 總覽 */
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:560px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.stat .v{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat .k{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.catrow{display:flex;align-items:center;gap:12px;padding:7px 0}
+.catrow .nm{width:138px;flex:none;font-size:14px}
+.catrow .bar{flex:1;height:9px;background:var(--line-soft);border-radius:99px;overflow:hidden;position:relative}
+.catrow .bar i{display:block;height:100%;border-radius:99px;background:var(--pine-mid)}
+.catrow .pc{width:96px;flex:none;text-align:right;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+
+/* 情境包卡 */
+.packcard{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:12px}
+.packcard:hover{border-color:var(--pine-mid)}
+.packcard h3{margin:6px 0 4px;font-size:17px}
+.packcard .intro{font-size:13.5px;color:var(--ink-soft);margin:2px 0 8px}
+.seg{display:flex;gap:0;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card);margin:6px 0 4px}
+.seg button{flex:1;padding:11px 6px;font-size:14.5px;font-weight:600;color:var(--ink-soft);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--pine);color:#fff}
+
+/* 作答 */
+.q-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13.5px;color:var(--ink-soft)}
+.prog{height:5px;background:var(--line-soft);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.prog i{display:block;height:100%;background:var(--pine);border-radius:99px;transition:width .2s}
+.q-scene{font-size:12.5px;color:var(--ink-faint);letter-spacing:.06em}
+.q-zh{font-size:24px;font-weight:800;line-height:1.5;margin:6px 0 4px;display:flex;gap:10px;align-items:flex-start}
+.speakbtn{font-size:18px;line-height:1;color:var(--ink-faint);padding:4px 6px;border-radius:8px}
+.speakbtn:hover{color:var(--pine)}
+.opts{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.opt{display:flex;align-items:center;gap:13px;padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);text-align:left;font-size:16px;font-family:var(--serif);transition:border-color .12s}
+.opt:hover{border-color:var(--ink-faint)}
+.opt .abc{flex:none;width:26px;height:26px;border-radius:8px;background:var(--paper);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--ink-soft);font-family:var(--sans)}
+.opt.correct{border-color:var(--ok);background:var(--ok-tint)}
+.opt.correct .abc{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--clay);background:var(--clay-tint)}
+.opt.wrong .abc{background:var(--clay);border-color:var(--clay);color:#fff}
+.opt.dim{opacity:.5}
+.opt[disabled]{cursor:default}
+.ansrow{min-height:54px;border:1.5px dashed var(--line);border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;background:var(--paper)}
+.ansrow.ok{border-color:var(--ok);background:var(--ok-tint)}
+.ansrow.bad{border-color:var(--clay);background:var(--clay-tint)}
+.pool{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:48px}
+.tile{padding:9px 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);font-family:var(--serif);font-size:17px;box-shadow:0 1px 0 var(--line)}
+.tile:hover{border-color:var(--pine-mid)}
+.tile.used{visibility:hidden}
+.tile[disabled]{cursor:default}
+.hint-empty{color:var(--ink-faint);font-size:13.5px;padding:6px 4px}
+input.typein{width:100%;margin-top:14px;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;font-size:18px;font-family:var(--serif);background:var(--card);color:var(--ink)}
+.typeopts{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;font-size:13px;color:var(--ink-soft)}
+.fb{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px}
+.verdict{font-size:17px;font-weight:800;margin:0 0 8px}
+.verdict.ok{color:var(--ok)} .verdict.no{color:var(--clay)}
+.stdans{font-family:var(--serif);font-size:19px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.altlist{font-size:14px;color:var(--ink-soft);margin:6px 0 0;padding-left:18px}
+.altlist li{font-family:var(--serif)}
+.why{background:var(--clay-tint);border:1px solid var(--clay-line);border-radius:10px;padding:9px 13px;font-size:14px;margin:10px 0}
+.chunks{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:12px 0;font-size:14.5px}
+.chunks div{padding:8px 12px;border-bottom:1px solid var(--line-soft)}
+.chunks .h{background:var(--paper);font-size:12px;letter-spacing:.12em;color:var(--ink-faint);font-weight:700}
+.chunks .es{font-family:var(--serif);font-weight:600}
+.chunks div:nth-last-child(-n+2){border-bottom:none}
+.note{background:var(--brass-tint);border:1px solid var(--brass-line);border-radius:10px;padding:9px 13px;font-size:13.8px;margin:10px 0}
+.diff-bad{color:var(--clay);font-weight:700;text-decoration:underline wavy}
+.q-foot{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}
+.sum-score{text-align:center;padding:8px 0 2px}
+.sum-score .big{font-size:52px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--pine)}
+
+/* 片語／題庫 */
+.wordrow{display:flex;align-items:baseline;gap:10px;padding:9px 2px;border-bottom:1px dashed var(--line-soft);flex-wrap:wrap}
+.wordrow .w{font-family:var(--serif);font-weight:700;font-size:16.5px}
+.wordrow .m{color:var(--ink-soft);font-size:14px;flex:1}
+input.search{width:100%;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;font-size:15px;background:var(--card);color:var(--ink);margin-bottom:10px}
+textarea{width:100%;min-height:120px;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-family:Consolas,"Cascadia Mono",monospace;font-size:12.5px;background:var(--card);color:var(--ink);resize:vertical}
+.imp-msg{border-radius:10px;padding:10px 14px;font-size:14px;margin-top:10px}
+.imp-msg.ok{background:var(--ok-tint);color:var(--ok)}
+.imp-msg.err{background:var(--clay-tint);color:var(--clay)}
+details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:10px;background:var(--card)}
+details summary{cursor:pointer;font-weight:700;font-size:14.5px;color:var(--ink-soft)}
+details[open] summary{margin-bottom:10px}
+.bank-row{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-bottom:1px dashed var(--line-soft);font-size:14px}
+.bank-row .es{font-family:var(--serif);color:var(--ink-soft)}
+.warn{color:var(--clay);font-size:12px;font-weight:700}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:88vw;background:var(--pine-deep);color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:200;opacity:0;transition:opacity .25s;pointer-events:none}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:560px){
+  .masthead h1{font-size:26px}
+  .catrow .nm{width:100px;font-size:13px}
+  .q-zh{font-size:21px}
+}
+@media(max-width:640px){
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{font-size:16px}
+  #app{max-width:100%;padding:14px 14px calc(72px + env(safe-area-inset-bottom))}
+  .masthead{gap:8px;margin-bottom:14px}
+  .eyebrow{font-size:9px}
+  .masthead h1{font-size:22px}
+  .voicesel{max-width:120px;font-size:12.5px}
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;background:#fff;border:none;border-top:1px solid var(--line);border-radius:0;padding:4px 2px calc(4px + env(safe-area-inset-bottom));margin-bottom:0;overflow-x:visible}
+  .tabs button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px;border-radius:10px;font-size:10.5px;font-weight:600;white-space:normal}
+  .tabs button.on{background:transparent;color:var(--pine-deep)}
+  .tabs button .tab-ic{display:block;font-size:20px;line-height:1}
+  .tabs button .tab-tx{display:flex;align-items:center;gap:2px;line-height:1.1}
+  .tabs button .n{display:none}
+  .card{padding:16px;margin-bottom:12px}
+  .btn{min-height:48px;font-size:16px}
+  .acts .btn,.q-foot .btn{flex:1 1 auto}
+  .opt{min-height:48px;padding:13px 14px;font-size:17px}
+  .tile{padding:11px 14px;font-size:18px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="masthead">
+    <div>
+      <a href="../../index.html" class="btn ghost small" id="homelink" style="margin-bottom:8px">← 首頁</a>
+      <div class="eyebrow">ENTRENAMIENTO DE ESPAÑOL</div>
+      <h1>西文訓練場</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <select id="voicesel" class="voicesel" style="display:none" aria-label="語音"></select>
+      <button id="ratebtn" type="button" class="btn ghost small" title="語速（點擊切換：慢／正常／快）"></button>
+    </div>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <main id="view"><div class="empty">載入中…</div></main>
+</div>
+<div id="toast" role="status"></div>
+<input type="file" id="impfile" accept="application/json,.json" style="display:none">
+
+<script>
+'use strict';
+var ES_PACKS = /*ES_PACKS_START*/[{"id":"saludos","title":"自我介紹與寒暄","stage":1,"level":"A1","grammar":["ser/estar","主詞代名詞","hay","疑問詞","數字","tener","llamarse","冠詞","介系詞","固定問候"],"intro":"本包反覆用到的骨架：Soy／Eres／Es＋身分或國籍、Estoy＋狀態、Tengo＋數字＋años，以及 ¿Cómo／Qué／Dónde／De dónde／Cuántos…? 問句。自我介紹只用 Me llamo… 或 Se llama… 這兩個固定句型。","items":[{"id":"saludos-001","scene":"初次見面","zh":"你好，我是安娜。","es":"Hola, soy Ana.","alt":["Hola, me llamo Ana."],"tiles":["Hola","soy","Ana"],"distractors":["eres","es"],"options":[{"es":"Hola, eres Ana.","why":"soy 才是「我是」，eres 是「你是」。"},{"es":"Hola, estoy Ana.","why":"介紹名字用 ser，不用 estar。"},{"es":"Hola, es Ana.","why":"es 是「他／她是」，說自己要用 soy。"}],"chunks":[{"es":"Hola","zh":"你好"},{"es":"soy Ana","zh":"我是安娜（ser 第一人稱）"}],"note":"初次見面最常用 Hola, soy… 或 Me llamo…。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-002","scene":"初次見面","zh":"幸會，安娜。","es":"Mucho gusto, Ana.","alt":["Encantado, Ana.","Encantada, Ana."],"tiles":["Mucho","gusto","Ana"],"distractors":["mucha","gustos"],"options":[{"es":"Mucha gusto, Ana.","why":"gusto 是陽性名詞，要用 mucho。"},{"es":"Muchos gusto, Ana.","why":"gusto 是單數，不能加 muchos。"},{"es":"Mucho gusta, Ana.","why":"「幸會」是名詞 gusto，不是動詞 gusta。"}],"chunks":[{"es":"Mucho gusto","zh":"幸會（固定問候）"},{"es":"Ana","zh":"對方名字"}],"note":"Encantado（男）／Encantada（女）是同樣常用的說法。","tags":["冠詞","主詞代名詞"]},{"id":"saludos-003","scene":"初次見面","zh":"我叫卡洛斯。","es":"Me llamo Carlos.","alt":["Soy Carlos."],"tiles":["Me","llamo","Carlos"],"distractors":["te","llama"],"options":[{"es":"Me llama Carlos.","why":"自己說名字用 me llamo，不是 me llama。"},{"es":"Llamo Carlos.","why":"少了 me，llamarse 是反身動詞。"},{"es":"Se llamo Carlos.","why":"se 是第三人稱，第一人稱要用 me。"}],"chunks":[{"es":"Me llamo","zh":"我叫（固定句）"},{"es":"Carlos","zh":"名字"}],"note":"Me llamo… 與 Soy… 都自然，前者稍正式。","tags":["llamarse","主詞代名詞"]},{"id":"saludos-004","scene":"自我介紹","zh":"我來自台灣。","es":"Soy de Taiwán.","alt":["Yo soy de Taiwán."],"tiles":["Soy","de","Taiwán"],"distractors":["estoy","en"],"options":[{"es":"Estoy de Taiwán.","why":"國籍來源用 ser＋de，不用 estar。"},{"es":"Soy en Taiwán.","why":"「來自」要用 de，不是 en。"},{"es":"Eres de Taiwán.","why":"eres 是「你是」，說自己要用 soy。"}],"chunks":[{"es":"Soy","zh":"我是（ser）"},{"es":"de Taiwán","zh":"來自台灣"}],"note":"ser＋de＋地名表示出身，是最基本的國籍說法。","tags":["ser/estar","疑問詞"]},{"id":"saludos-005","scene":"朋友聊天","zh":"你是哪裡人？","es":"¿De dónde eres?","alt":["¿De dónde eres tú?"],"tiles":["De","dónde","eres"],"distractors":["soy","estás"],"options":[{"es":"¿Dónde eres?","why":"問出身要用 de dónde，少了 de。"},{"es":"¿De dónde estás?","why":"出身用 ser，不用 estar。"},{"es":"¿De dónde es?","why":"es 是對 usted 或第三人稱，朋友用 eres。"}],"chunks":[{"es":"¿De dónde","zh":"從哪裡"},{"es":"eres?","zh":"你是（tú 的 ser）"}],"note":"對陌生人或長輩改用 ¿De dónde es usted?。","tags":["疑問詞","ser/estar"]},{"id":"saludos-006","scene":"朋友打招呼","zh":"嗨，路易斯，最近怎樣？","es":"¿Qué tal, Luis?","alt":["¿Cómo estás, Luis?"],"tiles":["Qué","tal","Luis"],"distractors":["cuál","estoy"],"options":[{"es":"¿Qué tal estoy, Luis?","why":"問候對方，不能用 estoy。"},{"es":"¿Cuál tal, Luis?","why":"「最近怎樣」固定用 qué tal，不是 cuál。"},{"es":"¿Qué tal es, Luis?","why":"qué tal 後面不接 es，直接問候即可。"}],"chunks":[{"es":"¿Qué tal","zh":"最近怎樣（固定問候）"},{"es":"Luis","zh":"對方名字"}],"note":"¿Qué tal? 是朋友之間最口語的問候，不用在長輩身上。","tags":["疑問詞","固定問候"]},{"id":"saludos-007","scene":"說年齡","zh":"我二十歲。","es":"Tengo veinte años.","alt":["Yo tengo veinte años."],"tiles":["Tengo","veinte","años"],"distractors":["soy","estoy"],"options":[{"es":"Soy veinte años.","why":"西語說年齡用 tener，不用 ser。"},{"es":"Estoy veinte años.","why":"年齡不能用 estar，要用 tener。"},{"es":"Tiene veinte años.","why":"tiene 是「他／她有」，說自己用 tengo。"}],"chunks":[{"es":"Tengo","zh":"我有（tener）"},{"es":"veinte años","zh":"二十歲"}],"note":"年齡一律用 tener＋數字＋años，中文的「是」不能直譯。","tags":["tener","數字"]},{"id":"saludos-008","scene":"問年齡","zh":"你幾歲？","es":"¿Cuántos años tienes?","alt":["¿Qué edad tienes?"],"tiles":["Cuántos","años","tienes"],"distractors":["tengo","eres"],"options":[{"es":"¿Cuántos años eres?","why":"問年齡用 tener，不用 ser。"},{"es":"¿Cuánto años tienes?","why":"años 是複數陽性，要用 cuántos。"},{"es":"¿Cuántos años tengo?","why":"tengo 是「我有」，問對方要用 tienes。"}],"chunks":[{"es":"¿Cuántos años","zh":"幾歲（cuántos 配 años）"},{"es":"tienes?","zh":"你有（tener 第二人稱）"}],"note":"對長輩或陌生人通常不直接問年齡，需要時用 usted tiene。","tags":["tener","疑問詞"]},{"id":"saludos-009","scene":"道別","zh":"待會見，巴布羅。","es":"Hasta luego, Pablo.","alt":["Nos vemos luego, Pablo."],"tiles":["Hasta","luego","Pablo"],"distractors":["pronto","adiós"],"options":[{"es":"Hasta luegos, Pablo.","why":"luego 是副詞，不能加 s。"},{"es":"A luego, Pablo.","why":"固定說法是 hasta luego，不是 a luego。"},{"es":"Hasta lugo, Pablo.","why":"拼字錯誤，應為 luego。"}],"chunks":[{"es":"Hasta luego","zh":"待會見（固定道別）"},{"es":"Pablo","zh":"對方名字"}],"note":"同一天內會再見面時用；較久才見面用 Hasta pronto。","tags":["疑問詞","固定問候"]},{"id":"saludos-010","scene":"確認身分","zh":"對，是我。","es":"Sí, soy yo.","alt":[],"tiles":["Sí","soy","yo"],"distractors":["eres","es"],"options":[{"es":"Sí, estoy yo.","why":"表達「是我」用 ser，不用 estar。"},{"es":"Sí, es yo.","why":"主詞是我，動詞要用 soy。"},{"es":"Sí, soy me.","why":"西語主詞是 yo，不是 me。"}],"chunks":[{"es":"Sí","zh":"對"},{"es":"soy yo","zh":"是我"}],"note":"接電話或被人叫名字時很常用。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-011","scene":"對長輩問候","zh":"您好嗎？","es":"¿Cómo está usted?","alt":["¿Cómo está?"],"tiles":["Cómo","está","usted"],"distractors":["estás","eres"],"options":[{"es":"¿Cómo estás usted?","why":"usted 要搭配第三人稱 está。"},{"es":"¿Cómo es usted?","why":"問狀況用 estar，es 是問性格或外表。"},{"es":"¿Cómo está tú?","why":"tú 要搭配 estás，不是 está。"}],"chunks":[{"es":"¿Cómo","zh":"如何"},{"es":"está usted?","zh":"您（estar 第三人稱）"}],"note":"對陌生人與長輩用 usted，對朋友改成 ¿Cómo estás?。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-012","scene":"道別","zh":"明天見。","es":"Nos vemos mañana.","alt":["Hasta mañana."],"tiles":["Nos","vemos","mañana"],"distractors":["veo","ayer"],"options":[{"es":"Nos veo mañana.","why":"nos 對應 vemos，不能配 veo。"},{"es":"Me vemos mañana.","why":"nos 才是「我們」，me 是「我」。"},{"es":"Nos vemos ayer.","why":"ayer 是「昨天」，明天要用 mañana。"}],"chunks":[{"es":"Nos vemos","zh":"我們見面"},{"es":"mañana","zh":"明天"}],"note":"Hasta mañana 同樣自然，較簡短。","tags":["主詞代名詞","固定問候"]},{"id":"saludos-013","scene":"朋友問候","zh":"我很好，謝謝。","es":"Estoy muy bien, gracias.","alt":["Muy bien, gracias.","Estoy bien, gracias."],"tiles":["Estoy","muy","bien","gracias"],"distractors":["soy","tengo"],"options":[{"es":"Soy muy bien, gracias.","why":"狀態用 estar，不用 ser。"},{"es":"Estoy muy bueno, gracias.","why":"「很好」是副詞 bien，不是 bueno。"},{"es":"Estás muy bien, gracias.","why":"estás 是「你」，回答自己要用 estoy。"}],"chunks":[{"es":"Estoy","zh":"我（狀態）是"},{"es":"muy bien","zh":"很好"},{"es":"gracias","zh":"謝謝"}],"note":"標準回答：Muy bien, gracias. ¿Y tú?。","tags":["ser/estar","固定問候"]},{"id":"saludos-014","scene":"對陌生人問名字","zh":"請問您貴姓大名？","es":"¿Cómo se llama usted?","alt":["¿Cuál es su nombre?"],"tiles":["Cómo","se","llama","usted"],"distractors":["te","llamas"],"options":[{"es":"¿Cómo te llama usted?","why":"usted 要搭配 se，不是 te。"},{"es":"¿Cómo llama usted?","why":"少了反身代名詞 se。"},{"es":"¿Qué se llama usted?","why":"問名字用 cómo，不用 qué。"}],"chunks":[{"es":"¿Cómo se llama","zh":"叫什麼名字（第三人稱）"},{"es":"usted?","zh":"您"}],"note":"對朋友才用 ¿Cómo te llamas?，與陌生人用 usted。","tags":["llamarse","疑問詞"]},{"id":"saludos-015","scene":"介紹家人","zh":"我爸爸是工程師。","es":"Mi padre es ingeniero.","alt":["Mi papá es ingeniero."],"tiles":["Mi","padre","es","ingeniero"],"distractors":["está","una"],"options":[{"es":"Mi padre está ingeniero.","why":"職業用 ser，不用 estar。"},{"es":"Mi padre es ingeniera.","why":"父親是男性，職業要用 ingeniero。"},{"es":"Mi padre son ingeniero.","why":"主詞單數，動詞要用 es。"}],"chunks":[{"es":"Mi padre","zh":"我爸爸"},{"es":"es ingeniero","zh":"是工程師"}],"note":"職業前面不加冠詞，除非有形容詞修飾。","tags":["ser/estar","冠詞"]},{"id":"saludos-016","scene":"自我介紹","zh":"我是學英文的學生。","es":"Soy estudiante de inglés.","alt":["Yo soy estudiante de inglés."],"tiles":["Soy","estudiante","de","inglés"],"distractors":["estoy","en"],"options":[{"es":"Estoy estudiante de inglés.","why":"身分用 ser，不用 estar。"},{"es":"Soy estudiante en inglés.","why":"學習科目用 de，不是 en。"},{"es":"Eres estudiante de inglés.","why":"eres 是「你是」，說自己要用 soy。"}],"chunks":[{"es":"Soy estudiante","zh":"我是學生"},{"es":"de inglés","zh":"（學）英文的"}],"note":"estudiante 陰陽性同形，男女都不用改。","tags":["ser/estar","介系詞"]},{"id":"saludos-017","scene":"介紹家人","zh":"我媽媽叫羅莎。","es":"Mi madre se llama Rosa.","alt":["Mi mamá se llama Rosa."],"tiles":["Mi","madre","se","llama","Rosa"],"distractors":["me","llamo"],"options":[{"es":"Mi madre me llama Rosa.","why":"說別人名字用 se llama。"},{"es":"Mi madre es llama Rosa.","why":"不需要 es，直接 se llama。"},{"es":"Mi madre llama Rosa.","why":"少了 se，llamarse 為反身動詞。"}],"chunks":[{"es":"Mi madre","zh":"我的媽媽"},{"es":"se llama","zh":"她叫（固定句）"},{"es":"Rosa","zh":"名字"}],"note":"口語常說 mi mamá，書面用 mi madre。","tags":["llamarse","主詞代名詞"]},{"id":"saludos-018","scene":"介紹朋友","zh":"這位是我朋友瑪麗亞。","es":"Ella es mi amiga María.","alt":["Esta es mi amiga María."],"tiles":["Ella","es","mi","amiga","María"],"distractors":["amigo","él"],"options":[{"es":"Ella es mi amigo María.","why":"amiga 要配陰性，amigo 是陽性。"},{"es":"Él es mi amiga María.","why":"主詞 él 是男性，與 amiga 不一致。"},{"es":"Ella está mi amiga María.","why":"身分用 ser，不用 estar。"}],"chunks":[{"es":"Ella es","zh":"她是"},{"es":"mi amiga","zh":"我的（女性）朋友"},{"es":"María","zh":"名字"}],"note":"正式一點可說 Te presento a mi amiga María.。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-019","scene":"介紹家人","zh":"他是我弟弟巴布羅。","es":"Él es mi hermano pequeño, Pablo.","alt":["Este es mi hermano pequeño, Pablo."],"tiles":["Él","es","mi","hermano","pequeño","Pablo"],"distractors":["hermana","ella"],"options":[{"es":"Él es mi hermana pequeño, Pablo.","why":"hermana 是姊妹，男生名字要配 hermano。"},{"es":"Ella es mi hermano pequeño, Pablo.","why":"Pablo 是男性，主詞要用 él。"},{"es":"Él está mi hermano pequeño, Pablo.","why":"身分用 ser，不用 estar。"}],"chunks":[{"es":"Él es","zh":"他是"},{"es":"mi hermano pequeño","zh":"我弟弟（hermano＋pequeño）"},{"es":"Pablo","zh":"名字"}],"note":"弟弟說 hermano pequeño（或 menor），哥哥說 hermano mayor。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-020","scene":"朋友聊天","zh":"你是馬德里人還是巴塞隆納人？","es":"¿Eres de Madrid o Barcelona?","alt":["¿Eres de Madrid o de Barcelona?"],"tiles":["Eres","de","Madrid","o","Barcelona"],"distractors":["y","estás"],"options":[{"es":"¿Estás de Madrid o Barcelona?","why":"出身用 ser，不用 estar。"},{"es":"¿Eres de Madrid y Barcelona?","why":"二選一要用 o（或），不是 y。"},{"es":"¿Es de Madrid o Barcelona?","why":"對朋友要用 eres，es 是對 usted。"}],"chunks":[{"es":"¿Eres de Madrid","zh":"你是馬德里人嗎"},{"es":"o Barcelona?","zh":"還是巴塞隆納"}],"note":"二選一問句直接用 o 連接兩個地名。","tags":["ser/estar","疑問詞"]},{"id":"saludos-021","scene":"介紹家人","zh":"我爸媽在家。","es":"Mis padres están en casa.","alt":["Mis papás están en casa."],"tiles":["Mis","padres","están","en","casa"],"distractors":["es","son"],"options":[{"es":"Mis padres son en casa.","why":"地點用 estar，不用 ser。"},{"es":"Mis padres está en casa.","why":"複數主詞要用 están。"},{"es":"Mi padres están en casa.","why":"mis 要配複數 padres。"}],"chunks":[{"es":"Mis padres","zh":"我爸媽（padres 泛指父母）"},{"es":"están","zh":"在（estar 複數）"},{"es":"en casa","zh":"在家"}],"note":"padres 在西語指「父母」，不是只有爸爸。","tags":["ser/estar","介系詞"]},{"id":"saludos-022","scene":"問家人","zh":"你家人現在在哪裡？","es":"¿Dónde está tu familia ahora?","alt":["¿Dónde está tu familia?"],"tiles":["Dónde","está","tu","familia","ahora"],"distractors":["son","tus"],"options":[{"es":"¿Dónde es tu familia ahora?","why":"問位置用 estar，不用 ser。"},{"es":"¿Dónde están tu familia ahora?","why":"familia 是單數，動詞用 está。"},{"es":"¿Dónde está tus familia ahora?","why":"tu 要配單數 familia。"}],"chunks":[{"es":"¿Dónde está","zh":"在哪裡"},{"es":"tu familia","zh":"你的家人"},{"es":"ahora?","zh":"現在"}],"note":"dónde 問位置，搭配 estar 是固定組合。","tags":["疑問詞","ser/estar"]},{"id":"saludos-023","scene":"認人","zh":"請問您是老師還是學生？","es":"¿Es usted profesor o estudiante?","alt":["¿Usted es profesor o estudiante?"],"tiles":["Es","usted","profesor","o","estudiante"],"distractors":["eres","estás"],"options":[{"es":"¿Eres usted profesor o estudiante?","why":"usted 要配 es，不是 eres。"},{"es":"¿Está usted profesor o estudiante?","why":"職業身分用 ser。"},{"es":"¿Es tú profesor o estudiante?","why":"tú 要配 eres，這裡 usted 才對。"}],"chunks":[{"es":"¿Es usted","zh":"您是"},{"es":"profesor o estudiante?","zh":"老師還是學生"}],"note":"正式問法，對朋友改成 ¿Eres profesor o estudiante?。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-024","scene":"說日期","zh":"今天是六月三日，星期二。","es":"Hoy es martes, tres de junio.","alt":["Hoy es martes, el tres de junio."],"tiles":["Hoy","es","martes","tres","de","junio"],"distractors":["son","está"],"options":[{"es":"Hoy está martes, tres de junio.","why":"日期和星期用 ser，不用 estar。"},{"es":"Hoy son martes, tres de junio.","why":"星期是單數，要用 es。"},{"es":"Hoy es martes, tres del junio.","why":"月份前用 de，不是 del。"}],"chunks":[{"es":"Hoy es martes","zh":"今天是星期二"},{"es":"tres de junio","zh":"六月三日（日 de 月）"}],"note":"日期格式是「數字 de 月份」，月份小寫。","tags":["數字","ser/estar"]},{"id":"saludos-025","scene":"介紹家人","zh":"我有兩個兄弟和一個姊妹。","es":"Tengo dos hermanos y una hermana.","alt":["Tengo una hermana y dos hermanos."],"tiles":["Tengo","dos","hermanos","y","una","hermana"],"distractors":["un","soy"],"options":[{"es":"Tengo dos hermanos y un hermana.","why":"hermana 是陰性，冠詞要用 una。"},{"es":"Soy dos hermanos y una hermana.","why":"「有」兄弟姊妹要用 tener。"},{"es":"Tiene dos hermanos y una hermana.","why":"說自己用 tengo，不是 tiene。"}],"chunks":[{"es":"Tengo","zh":"我有"},{"es":"dos hermanos","zh":"兩個兄弟"},{"es":"y una hermana","zh":"和一個姊妹"}],"note":"hermanos 在西語中可泛指兄弟姊妹，要分開講才用 hermana。","tags":["tener","數字"]},{"id":"saludos-026","scene":"介紹朋友","zh":"我朋友在馬德里當老師。","es":"Mi amiga es profesora en Madrid.","alt":[],"tiles":["Mi","amiga","es","profesora","en","Madrid"],"distractors":["profesor","está"],"options":[{"es":"Mi amiga es profesor en Madrid.","why":"女性朋友要配 profesora。"},{"es":"Mi amiga está profesora en Madrid.","why":"職業用 ser，不用 estar。"},{"es":"Mi amigo es profesora en Madrid.","why":"amigo 與 profesora 性別不一致。"}],"chunks":[{"es":"Mi amiga","zh":"我的（女性）朋友"},{"es":"es profesora","zh":"是老師"},{"es":"en Madrid","zh":"在馬德里"}],"note":"職業有陰陽性變化：profesor／profesora。","tags":["ser/estar","介系詞"]},{"id":"saludos-027","scene":"介紹家庭","zh":"我家有四個人。","es":"En mi familia somos cuatro.","alt":["Somos cuatro en mi familia."],"tiles":["En","mi","familia","somos","cuatro"],"distractors":["soy","son"],"options":[{"es":"En mi familia soy cuatro.","why":"「我們是」要用 somos，soy 是「我是」。"},{"es":"En mi familia sois cuatro.","why":"「我們」要用 somos，sois 是「你們是」。"},{"es":"En mi familia somos cuatros.","why":"數字 cuatro 當人數用，不加 s。"}],"chunks":[{"es":"En mi familia","zh":"在我的家裡"},{"es":"somos cuatro","zh":"我們有四個人（ser 第一人稱複數）"}],"note":"說家裡有幾個人，西班牙人最常用 somos＋數字，比 hay 更自然。","tags":["ser/estar","數字"]},{"id":"saludos-028","scene":"認人","zh":"不好意思，請問您是魯伊斯先生嗎？","es":"Perdone, ¿es usted el señor Ruiz?","alt":["Disculpe, ¿es usted el señor Ruiz?"],"tiles":["Perdone","es","usted","el","señor","Ruiz"],"distractors":["eres","tú"],"options":[{"es":"Perdone, ¿eres el señor Ruiz?","why":"對陌生人要用 usted，不用 tú。"},{"es":"Perdone, ¿está usted el señor Ruiz?","why":"身分用 ser，不用 estar。"},{"es":"Perdone, ¿es usted la señor Ruiz?","why":"señor 是陽性，冠詞要用 el。"}],"chunks":[{"es":"Perdone","zh":"不好意思（引起注意）"},{"es":"¿es usted","zh":"您是"},{"es":"el señor Ruiz?","zh":"魯伊斯先生"}],"note":"Perdone／Disculpe 都是向陌生人開口的常用開場。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-029","scene":"約朋友","zh":"星期六下午你有空嗎？","es":"¿Estás libre el sábado por la tarde?","alt":["¿Tienes tiempo el sábado por la tarde?"],"tiles":["Estás","libre","el","sábado","por","la","tarde"],"distractors":["eres","está"],"options":[{"es":"¿Eres libre el sábado por la tarde?","why":"此時的「有空」表示狀態，用 estar。"},{"es":"¿Estás libre el sábado a la tarde?","why":"「下午」固定說 por la tarde。"},{"es":"¿Estás libre en sábado por la tarde?","why":"星期前面用冠詞 el，不用 en。"}],"chunks":[{"es":"¿Estás libre","zh":"你有空嗎（狀態）"},{"es":"el sábado","zh":"星期六"},{"es":"por la tarde?","zh":"在下午"}],"note":"星期名稱前加 el 表示「在那一天」。","tags":["ser/estar","數字"]},{"id":"saludos-030","scene":"約時間","zh":"星期五三點見。","es":"Nos vemos el viernes a las tres.","alt":["Quedamos el viernes a las tres."],"tiles":["Nos","vemos","el","viernes","a","las","tres"],"distractors":["en","la"],"options":[{"es":"Nos vemos el viernes a la tres.","why":"整點要用 a las tres，tres 是複數。"},{"es":"Nos vemos viernes a las tres.","why":"星期要加冠詞 el。"},{"es":"Nos vemos el viernes en las tres.","why":"時間用 a，不是 en。"}],"chunks":[{"es":"Nos vemos","zh":"我們見面"},{"es":"el viernes","zh":"星期五"},{"es":"a las tres","zh":"三點"}],"note":"一點用 a la una，其餘整點都用 a las。","tags":["數字","介系詞"]},{"id":"saludos-031","scene":"朋友聊天","zh":"我今天有點累，你呢？","es":"Estoy un poco cansado hoy, ¿y tú?","alt":["Hoy estoy un poco cansado, ¿y tú?"],"tiles":["Estoy","un","poco","cansado","hoy","y","tú"],"distractors":["soy","muy"],"options":[{"es":"Soy un poco cansado hoy, ¿y tú?","why":"暫時的狀態用 estar。"},{"es":"Estoy un poco cansada hoy, ¿y tú?","why":"男生說話要用 cansado。"},{"es":"Estoy un poco cansado hoy, ¿y usted?","why":"對朋友用 tú，不用 usted。"}],"chunks":[{"es":"Estoy un poco cansado","zh":"我有點累"},{"es":"hoy","zh":"今天"},{"es":"¿y tú?","zh":"你呢"}],"note":"女生說 cansada；¿Y tú? 用來把問題丟回對方。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-032","scene":"問陌生人","zh":"不好意思，請問您是哪裡人，加西亞先生？","es":"Disculpe, ¿de dónde es usted, señor García?","alt":["Perdone, ¿de dónde es usted, señor García?"],"tiles":["Disculpe","de","dónde","es","usted","señor","García"],"distractors":["eres","tú"],"options":[{"es":"Disculpe, ¿de dónde eres, señor García?","why":"對先生要用 usted，不用 tú。"},{"es":"Disculpe, ¿dónde es usted, señor García?","why":"問出身要用 de dónde。"},{"es":"Disculpe, ¿de dónde está usted, señor García?","why":"出身用 ser，不用 estar。"}],"chunks":[{"es":"Disculpe","zh":"不好意思"},{"es":"¿de dónde es usted,","zh":"您從哪裡來"},{"es":"señor García?","zh":"加西亞先生"}],"note":"稱呼對方時 señor／señora 放在句尾即可。","tags":["疑問詞","主詞代名詞"]},{"id":"saludos-033","scene":"拜訪","zh":"早安，羅培茲女士，您今天好嗎？","es":"Buenos días, señora López, ¿cómo está usted hoy?","alt":["Buenos días, señora López, ¿cómo está hoy?"],"tiles":["Buenos","días","señora","López","cómo","está","usted","hoy"],"distractors":["estás","señor"],"options":[{"es":"Buenos días, señora López, ¿cómo estás hoy?","why":"對女士要用 usted 形式 está。"},{"es":"Buenos días, señor López, ¿cómo está usted hoy?","why":"señora 與 señor 性別不同。"},{"es":"Buen días, señora López, ¿cómo está usted hoy?","why":"Buenos días 要用複數 buenos。"}],"chunks":[{"es":"Buenos días","zh":"早安"},{"es":"señora López","zh":"羅培茲女士"},{"es":"¿cómo está usted hoy?","zh":"您今天好嗎"}],"note":"中午前用 Buenos días，下午到傍晚用 Buenas tardes。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-034","scene":"自我介紹","zh":"幸會，我是路易斯，我來自台灣。","es":"Mucho gusto, soy Luis y soy de Taiwán.","alt":["Encantado, soy Luis y soy de Taiwán."],"tiles":["Mucho","gusto","soy","Luis","y","soy","de","Taiwán"],"distractors":["estoy","eres"],"options":[{"es":"Mucho gusto, estoy Luis y estoy de Taiwán.","why":"名字和國籍都用 ser。"},{"es":"Mucho gusto, soy Luis y soy en Taiwán.","why":"「來自」要用 de，不是 en。"},{"es":"Mucho gusto, eres Luis y soy de Taiwán.","why":"說自己的名字要用 soy。"}],"chunks":[{"es":"Mucho gusto","zh":"幸會"},{"es":"soy Luis","zh":"我是路易斯"},{"es":"y soy de Taiwán","zh":"而且我來自台灣"}],"note":"兩個 soy 連用很自然，不必省略。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-035","scene":"自我介紹","zh":"你好，我叫安娜，今年二十五歲。","es":"Hola, me llamo Ana y tengo veinticinco años.","alt":["Hola, soy Ana y tengo veinticinco años."],"tiles":["Hola","me","llamo","Ana","y","tengo","veinticinco","años"],"distractors":["soy","estoy"],"options":[{"es":"Hola, me llamo Ana y soy veinticinco años.","why":"說年齡用 tener，不用 ser。"},{"es":"Hola, me llamo Ana y tengo veinticinco año.","why":"años 要用複數。"},{"es":"Hola, me llama Ana y tengo veinticinco años.","why":"自己說名字用 me llamo。"}],"chunks":[{"es":"me llamo Ana","zh":"我叫安娜"},{"es":"y tengo","zh":"而且我有"},{"es":"veinticinco años","zh":"二十五歲"}],"note":"二十一到二十九是連寫的 veinti- 開頭。","tags":["llamarse","tener","數字"]},{"id":"saludos-036","scene":"介紹家人","zh":"我姊姊三十歲，是醫生。","es":"Mi hermana mayor tiene treinta años y es médica.","alt":["Mi hermana mayor tiene treinta años y es doctora."],"tiles":["Mi","hermana","mayor","tiene","treinta","años","y","es","médica"],"distractors":["tengo","está"],"options":[{"es":"Mi hermana mayor tengo treinta años y es médica.","why":"主詞 hermana 要配 tiene。"},{"es":"Mi hermana mayor es treinta años y es médica.","why":"年齡要用 tener，不是 ser。"},{"es":"Mi hermana mayor tiene treinta años y es médico.","why":"女性要用 médica。"}],"chunks":[{"es":"Mi hermana mayor","zh":"我姊姊（mayor＝較年長）"},{"es":"tiene treinta años","zh":"三十歲"},{"es":"y es médica","zh":"而且是醫生"}],"note":"姊姊說 hermana mayor，妹妹說 hermana menor。","tags":["tener","ser/estar","數字"]},{"id":"saludos-037","scene":"介紹班級","zh":"我的西文班有二十個學生。","es":"Hay veinte estudiantes en mi clase de español.","alt":["En mi clase de español hay veinte estudiantes."],"tiles":["Hay","veinte","estudiantes","en","mi","clase","de","español"],"distractors":["son","tengo"],"options":[{"es":"Hay veinte estudiantes a mi clase de español.","why":"「在班上」用 en，不是 a。"},{"es":"Hay veinte estudiante en mi clase de español.","why":"數字後面名詞要用複數。"},{"es":"Hay veinte estudiantes en mi clase del español.","why":"課名用 de español，不加冠詞 el。"}],"chunks":[{"es":"Hay veinte estudiantes","zh":"有二十個學生"},{"es":"en mi clase","zh":"在我的班上"},{"es":"de español","zh":"西班牙文的"}],"note":"hay＋數字＋名詞 是描述「有多少」的最直接說法。","tags":["hay","數字"]},{"id":"saludos-038","scene":"自我介紹","zh":"我們來自台北，現在在這裡度假。","es":"Somos de Taipéi y estamos aquí de vacaciones.","alt":["Somos de Taipéi y estamos aquí de vacaciones ahora."],"tiles":["Somos","de","Taipéi","y","estamos","aquí","de","vacaciones"],"distractors":["soy","estoy"],"options":[{"es":"Soy de Taipéi y estamos aquí de vacaciones.","why":"主詞「我們」要用 somos。"},{"es":"Somos de Taipéi y somos aquí de vacaciones.","why":"所在地用 estar，不用 ser。"},{"es":"Somos de Taipéi y estamos aquí en vacaciones.","why":"「度假」固定說 de vacaciones。"}],"chunks":[{"es":"Somos de Taipéi","zh":"我們來自台北"},{"es":"y estamos aquí","zh":"現在在這裡"},{"es":"de vacaciones","zh":"度假"}],"note":"ser 說出身、estar 說所在地，兩者在同一句裡區分很清楚。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-039","scene":"介紹朋友","zh":"這是我朋友巴布羅，他是墨西哥人。","es":"Este es mi amigo Pablo, es de México.","alt":["Este es mi amigo Pablo, él es de México."],"tiles":["Este","es","mi","amigo","Pablo","es","de","México"],"distractors":["esta","ella"],"options":[{"es":"Esta es mi amigo Pablo, es de México.","why":"amigo 是陽性，指示詞用 este。"},{"es":"Este es mi amigo Pablo, eres de México.","why":"說別人用 es，eres 是「你是」。"},{"es":"Este es mi amigo Pablo, está de México.","why":"出身用 ser，不用 estar。"}],"chunks":[{"es":"Este es mi amigo Pablo","zh":"這是我朋友巴布羅"},{"es":"es de México","zh":"他來自墨西哥（省略 él）"}],"note":"主詞已清楚時常省略 él；加上 él 則帶強調或對比。","tags":["ser/estar","主詞代名詞"]},{"id":"saludos-040","scene":"說日期","zh":"明天是十月十日，是我的生日。","es":"Mañana es el diez de octubre, es mi cumpleaños.","alt":["Mañana es diez de octubre, es mi cumpleaños.","Mañana es mi cumpleaños, el diez de octubre."],"tiles":["Mañana","es","el","diez","de","octubre","es","mi","cumpleaños"],"distractors":["está","son"],"options":[{"es":"Mañana está el diez de octubre, es mi cumpleaños.","why":"日期用 ser，不用 estar。"},{"es":"Mañana es el diez de octubre, es mis cumpleaños.","why":"這裡的生日只有一個，用 mi。"},{"es":"Mañana es el diez de octubre, son mi cumpleaños.","why":"主詞是「明天」，用單數 es。"}],"chunks":[{"es":"Mañana es","zh":"明天是"},{"es":"el diez de octubre","zh":"十月十日"},{"es":"es mi cumpleaños","zh":"是我的生日"}],"note":"cumpleaños 單複數同形，要看前面的 mi／mis。","tags":["數字","ser/estar"]}]},{"id":"cafe","title":"咖啡店與餐廳點餐","stage":1,"level":"A1","grammar":["querer","me gustaría","冠詞","數字與價格","hay","estar（味道溫度）","por favor","疑問詞","副詞程度"],"intro":"點餐的骨架是 Quiero… 或更客氣的 Me gustaría…，句尾加 por favor；請服務生幫忙用 ¿Me trae…? 固定句。評論餐點用 estar（Está muy rico／frío），問價格用 ¿Cuánto cuesta…? 或 ¿Cuánto es?。","items":[{"id":"cafe-001","scene":"咖啡店櫃檯","zh":"我要一杯咖啡。","es":"Quiero un café.","alt":["Me gustaría un café."],"tiles":["Quiero","un","café"],"distractors":["quieres","una"],"options":[{"es":"Quieres un café.","why":"quieres 是「你要」，說自己要用 quiero。"},{"es":"Quiero una café.","why":"café 是陽性，冠詞要用 un。"},{"es":"Quiere un café.","why":"quiere 是他／她或您，說自己用 quiero。"}],"chunks":[{"es":"Quiero","zh":"我要（querer）"},{"es":"un café","zh":"一杯咖啡"}],"note":"直接說 Quiero… 偏直接，加 por favor 會更客氣。","tags":["querer","冠詞"]},{"id":"cafe-002","scene":"點飲料","zh":"我要一杯啤酒。","es":"Quiero una cerveza.","alt":["Me gustaría una cerveza."],"tiles":["Quiero","una","cerveza"],"distractors":["un","quieres"],"options":[{"es":"Quiero un cerveza.","why":"cerveza 是陰性，冠詞要用 una。"},{"es":"Quieres una cerveza.","why":"quieres 是「你要」，說自己用 quiero。"},{"es":"Quiero una cervezas.","why":"只點一杯，名詞用單數。"}],"chunks":[{"es":"Quiero","zh":"我要"},{"es":"una cerveza","zh":"一杯啤酒"}],"note":"酒吧裡 una caña 指一小杯生啤酒，更道地。","tags":["querer","冠詞"]},{"id":"cafe-003","scene":"反映問題","zh":"這個有點太燙了。","es":"Está muy caliente.","alt":["Está demasiado caliente."],"tiles":["Está","muy","caliente"],"distractors":["es","calor"],"options":[{"es":"Es muy caliente.","why":"暫時的溫度用 estar，不用 ser。"},{"es":"Tiene muy caliente.","why":"溫度要用 estar，不能說 tiene。"},{"es":"Está muy calor.","why":"形容詞要用 caliente，calor 是名詞。"}],"chunks":[{"es":"Está","zh":"它（現在）是"},{"es":"muy caliente","zh":"很燙"}],"note":"食物的溫度、味道，都用 estar 描述當下狀態。","tags":["estar（味道溫度）","副詞程度"]},{"id":"cafe-004","scene":"咖啡店櫃檯","zh":"一杯咖啡，麻煩了。","es":"Un café, por favor.","alt":["Quiero un café, por favor."],"tiles":["Un","café","por","favor"],"distractors":["una","el"],"options":[{"es":"Una café, por favor.","why":"café 是陽性，冠詞要用 un。"},{"es":"Un café, por favór.","why":"拼字錯誤，por favor 沒有重音。"},{"es":"Un café, gracias favor.","why":"請求用 por favor，不是 gracias favor。"}],"chunks":[{"es":"Un café","zh":"一杯咖啡"},{"es":"por favor","zh":"麻煩了／請"}],"note":"最省力的點餐法：名詞加 por favor。","tags":["冠詞","por favor"]},{"id":"cafe-005","scene":"咖啡店櫃檯","zh":"一杯茶，麻煩了。","es":"Un té, por favor.","alt":["Quiero un té, por favor."],"tiles":["Un","té","por","favor"],"distractors":["una","el"],"options":[{"es":"Una té, por favor.","why":"té 是陽性，冠詞要用 un。"},{"es":"Un te, por favor.","why":"「茶」té 要有重音，與 te 不同。"},{"es":"Un té, por favores.","why":"por favor 是固定說法，不加 es。"}],"chunks":[{"es":"Un té","zh":"一杯茶"},{"es":"por favor","zh":"請"}],"note":"té 的重音不能省，否則變成代名詞 te。","tags":["冠詞","por favor"]},{"id":"cafe-006","scene":"結帳","zh":"麻煩買單。","es":"La cuenta, por favor.","alt":["¿Me trae la cuenta, por favor?"],"tiles":["La","cuenta","por","favor"],"distractors":["el","una"],"options":[{"es":"El cuenta, por favor.","why":"cuenta 是陰性，冠詞要用 la。"},{"es":"La cuenta, gracias favor.","why":"請求用 por favor。"},{"es":"La cuentas, por favor.","why":"只要一張帳單，用單數。"}],"chunks":[{"es":"La cuenta","zh":"帳單"},{"es":"por favor","zh":"請"}],"note":"在西班牙通常要舉手示意，服務生才會把帳單送來。","tags":["冠詞","por favor"]},{"id":"cafe-007","scene":"問甜點","zh":"甜點有什麼？","es":"¿Qué hay de postre?","alt":["¿Qué postres hay?"],"tiles":["Qué","hay","de","postre"],"distractors":["cuál","está"],"options":[{"es":"¿Cuál hay de postre?","why":"問「有什麼」用 qué hay。"},{"es":"¿Qué está de postre?","why":"問有什麼東西用 hay，不用 estar。"},{"es":"¿Qué hay de postres?","why":"de postre 固定用單數。"}],"chunks":[{"es":"¿Qué hay","zh":"有什麼"},{"es":"de postre?","zh":"當甜點"}],"note":"hay 用來問或說「有什麼東西」，是點餐必備。","tags":["hay","疑問詞"]},{"id":"cafe-008","scene":"問價格","zh":"請問一共多少錢？","es":"¿Cuánto es, por favor?","alt":["¿Cuánto es todo?"],"tiles":["Cuánto","es","por","favor"],"distractors":["cuántos","está"],"options":[{"es":"¿Cuántos es, por favor?","why":"錢是不可數，用 cuánto。"},{"es":"¿Cuánta es, por favor?","why":"問總額固定用 cuánto，不是 cuánta。"},{"es":"¿Cuánto está, por favor?","why":"問總額固定用 es，不是 está。"}],"chunks":[{"es":"¿Cuánto es?","zh":"一共多少錢"},{"es":"por favor","zh":"麻煩了"}],"note":"結帳時問 ¿Cuánto es? 或 ¿Cuánto le debo?。","tags":["數字與價格","疑問詞"]},{"id":"cafe-009","scene":"稱讚食物","zh":"謝謝，非常好吃。","es":"Gracias, está muy rico.","alt":["Gracias, está buenísimo."],"tiles":["Gracias","está","muy","rico"],"distractors":["es","ricos"],"options":[{"es":"Gracias, es muy rico.","why":"味道好壞用 estar，不用 ser。"},{"es":"Gracias, está muy ricos.","why":"主詞是單數，形容詞也用單數。"},{"es":"Gracias, estoy muy rico.","why":"estoy 是「我」，描述食物要用 está。"}],"chunks":[{"es":"Gracias","zh":"謝謝"},{"es":"está muy rico","zh":"很好吃（estar＋味道）"}],"note":"rico／buenísimo 都是稱讚食物的口語說法。","tags":["estar（味道溫度）","por favor"]},{"id":"cafe-010","scene":"問飲食","zh":"有無糖的甜點嗎？","es":"¿Hay postres sin azúcar?","alt":["¿Tienen postres sin azúcar?"],"tiles":["Hay","postres","sin","azúcar"],"distractors":["está","con"],"options":[{"es":"¿Están postres sin azúcar?","why":"問有沒有，用 hay，不用 estar。"},{"es":"¿Hay postres con azúcar?","why":"con 是有糖，無糖要用 sin。"},{"es":"¿Hay postres en azúcar?","why":"「不含」用 sin，不是 en。"}],"chunks":[{"es":"¿Hay postres","zh":"有甜點嗎"},{"es":"sin azúcar?","zh":"不加糖的"}],"note":"有飲食限制時常用 ¿Hay… sin…? 開頭詢問。","tags":["hay","冠詞"]},{"id":"cafe-011","scene":"甜點","zh":"我要一份巧克力冰淇淋。","es":"Quiero un helado de chocolate.","alt":["Me gustaría un helado de chocolate."],"tiles":["Quiero","un","helado","de","chocolate"],"distractors":["una","con"],"options":[{"es":"Quiero una helado de chocolate.","why":"helado 是陽性，冠詞要用 un。"},{"es":"Quiero un helado en chocolate.","why":"口味固定用 de chocolate，不是 en。"},{"es":"Quiere un helado de chocolate.","why":"說自己要用 quiero。"}],"chunks":[{"es":"Quiero","zh":"我要"},{"es":"un helado","zh":"一份冰淇淋"},{"es":"de chocolate","zh":"巧克力口味"}],"note":"冰淇淋口味用 de：de fresa、de vainilla。","tags":["querer","冠詞"]},{"id":"cafe-012","scene":"反映問題","zh":"咖啡太冷了。","es":"El café está muy frío.","alt":["El café está demasiado frío."],"tiles":["El","café","está","muy","frío"],"distractors":["es","fría"],"options":[{"es":"El café es muy frío.","why":"溫度是暫時狀態，用 estar。"},{"es":"El café está muy fría.","why":"café 是陽性，形容詞用 frío。"},{"es":"La café está muy frío.","why":"café 是陽性，冠詞用 el。"}],"chunks":[{"es":"El café","zh":"咖啡"},{"es":"está","zh":"（現在）是"},{"es":"muy frío","zh":"很冷"}],"note":"frío 形容飲料或食物冷掉，是常見的客訴句。","tags":["estar（味道溫度）","冠詞"]},{"id":"cafe-013","scene":"詢問位置","zh":"有三人的位子嗎？","es":"¿Hay mesa libre para tres?","alt":["¿Tienen mesa para tres?"],"tiles":["Hay","mesa","libre","para","tres"],"distractors":["está","por"],"options":[{"es":"¿Está mesa libre para tres?","why":"問「有沒有」用 hay，不用 estar。"},{"es":"¿Hay mesa libre por tres?","why":"「給三人」用 para。"},{"es":"¿Hay mesa libre para tre?","why":"數字 tres 要拼對。"}],"chunks":[{"es":"¿Hay mesa libre","zh":"有空桌嗎"},{"es":"para tres?","zh":"給三個人"}],"note":"hay 後面的單數名詞可省略冠詞。","tags":["hay","數字與價格"]},{"id":"cafe-014","scene":"問價格","zh":"請問一共多少錢？","es":"¿Cuánto es todo, por favor?","alt":["¿Cuánto es en total, por favor?"],"tiles":["Cuánto","es","todo","por","favor"],"distractors":["cuántos","está"],"options":[{"es":"¿Cuántos es todo, por favor?","why":"金額用 cuánto。"},{"es":"¿Cuánto está todo, por favor?","why":"問總額用 es，不用 está。"},{"es":"¿Cuánto son todo, por favor?","why":"total 是單數，用 es。"}],"chunks":[{"es":"¿Cuánto es","zh":"多少錢"},{"es":"todo","zh":"全部"},{"es":"por favor?","zh":"麻煩了"}],"note":"¿Cuánto es todo? 是結帳時的簡單問法。","tags":["數字與價格","疑問詞"]},{"id":"cafe-015","scene":"反映問題","zh":"薯條太鹹了。","es":"Las patatas están muy saladas.","alt":["Las patatas están demasiado saladas."],"tiles":["Las","patatas","están","muy","saladas"],"distractors":["es","salado"],"options":[{"es":"Las patatas está muy saladas.","why":"patatas 是複數，動詞用 están。"},{"es":"Las patatas están muy salado.","why":"形容詞要配陰性複數 saladas。"},{"es":"Las patatas son muy saladas.","why":"當下的味道用 estar。"}],"chunks":[{"es":"Las patatas","zh":"薯條／馬鈴薯"},{"es":"están","zh":"（現在）是"},{"es":"muy saladas","zh":"很鹹"}],"note":"西班牙用 patatas，拉美多說 papas。","tags":["estar（味道溫度）","冠詞"]},{"id":"cafe-016","scene":"咖啡店櫃檯","zh":"一杯拿鐵，麻煩了。","es":"Un café con leche, por favor.","alt":["Quiero un café con leche, por favor."],"tiles":["Un","café","con","leche","por","favor"],"distractors":["una","de"],"options":[{"es":"Una café con leche, por favor.","why":"café 是陽性，冠詞要用 un。"},{"es":"Un café de leche, por favor.","why":"「加牛奶的咖啡」固定用 con leche。"},{"es":"Un café con leches, por favor.","why":"leche 單數，不用加 s。"}],"chunks":[{"es":"Un café con leche","zh":"一杯拿鐵（咖啡加牛奶）"},{"es":"por favor","zh":"麻煩了"}],"note":"西班牙的 café con leche 就是最常見的拿鐵。","tags":["冠詞","por favor"]},{"id":"cafe-017","scene":"訂位","zh":"我想要一個兩人桌。","es":"Me gustaría una mesa para dos.","alt":["Quiero una mesa para dos."],"tiles":["Me","gustaría","una","mesa","para","dos"],"distractors":["un","por"],"options":[{"es":"Me gustaría un mesa para dos.","why":"mesa 是陰性，冠詞要用 una。"},{"es":"Me gustaría una mesa por dos.","why":"表示「給兩人」用 para。"},{"es":"Me gusta una mesa para dos.","why":"「想要」用條件式 gustaría，不是 gusta。"}],"chunks":[{"es":"Me gustaría","zh":"我想要（客氣）"},{"es":"una mesa","zh":"一張桌子"},{"es":"para dos","zh":"給兩個人"}],"note":"Me gustaría 比 Quiero 客氣，訂位時很適用。","tags":["me gustaría","冠詞","數字與價格"]},{"id":"cafe-018","scene":"請服務生幫忙","zh":"可以給我菜單嗎？","es":"¿Me trae la carta, por favor?","alt":["¿Nos trae la carta, por favor?"],"tiles":["Me","trae","la","carta","por","favor"],"distractors":["el","traigo"],"options":[{"es":"¿Me trae el carta, por favor?","why":"carta 是陰性，冠詞要用 la。"},{"es":"¿Me traigo la carta, por favor?","why":"traigo 是「我帶來」，請對方拿要用 trae。"},{"es":"¿Me trae la carta, gracias favor?","why":"請求用 por favor。"}],"chunks":[{"es":"¿Me trae","zh":"您可以拿給我嗎"},{"es":"la carta","zh":"菜單"},{"es":"por favor?","zh":"麻煩了"}],"note":"carta 是菜單；menú 常指固定套餐。","tags":["冠詞","por favor"]},{"id":"cafe-019","scene":"請服務生幫忙","zh":"可以再給我一杯咖啡嗎？","es":"¿Me trae otro café, por favor?","alt":["¿Me trae un café más, por favor?"],"tiles":["Me","trae","otro","café","por","favor"],"distractors":["otra","traigo"],"options":[{"es":"¿Me trae otra café, por favor?","why":"café 是陽性，用 otro。"},{"es":"¿Me traigo otro café, por favor?","why":"traigo 是「我帶來」，請對方拿要用 trae。"},{"es":"¿Me trae otros café, por favor?","why":"要「另一杯」，用單數 otro。"}],"chunks":[{"es":"¿Me trae","zh":"可以拿給我嗎"},{"es":"otro café","zh":"再一杯咖啡"},{"es":"por favor?","zh":"麻煩了"}],"note":"otro café 與 un café más 都是「再一杯」，前者更口語。","tags":["冠詞","por favor"]},{"id":"cafe-020","scene":"點飲料","zh":"一杯可樂，不要冰，麻煩了。","es":"Una cola sin hielo, por favor.","alt":["Quiero una cola sin hielo, por favor."],"tiles":["Una","cola","sin","hielo","por","favor"],"distractors":["un","con"],"options":[{"es":"Un cola sin hielo, por favor.","why":"cola 是陰性，冠詞要用 una。"},{"es":"Una cola con hielo, por favor.","why":"con 是「加冰」，不要冰要用 sin。"},{"es":"Una cola no hielo, por favor.","why":"「不要」用 sin，不是 no。"}],"chunks":[{"es":"Una cola","zh":"一杯可樂"},{"es":"sin hielo","zh":"不要冰"},{"es":"por favor","zh":"麻煩了"}],"note":"想少冰可說 con poco hielo。","tags":["冠詞","por favor"]},{"id":"cafe-021","scene":"問價格","zh":"今日套餐多少錢？","es":"¿Cuánto cuesta el menú del día?","alt":["¿Cuánto es el menú del día?"],"tiles":["Cuánto","cuesta","el","menú","del","día"],"distractors":["cuestan","la"],"options":[{"es":"¿Cuánto cuestan el menú del día?","why":"menú 單數，動詞用 cuesta。"},{"es":"¿Cuánto cuesta la menú del día?","why":"menú 是陽性，冠詞用 el。"},{"es":"¿Cuántos cuesta el menú del día?","why":"價格用 cuánto，不是 cuántos。"}],"chunks":[{"es":"¿Cuánto cuesta","zh":"多少錢"},{"es":"el menú del día","zh":"今日套餐"}],"note":"西班牙午餐的 menú del día 通常含前菜、主菜與飲料。","tags":["數字與價格","疑問詞"]},{"id":"cafe-022","scene":"結帳","zh":"可以給我帳單嗎？","es":"¿Me trae la cuenta, por favor?","alt":["¿Nos trae la cuenta, por favor?"],"tiles":["Me","trae","la","cuenta","por","favor"],"distractors":["el","traigo"],"options":[{"es":"¿Me trae el cuenta, por favor?","why":"cuenta 是陰性，冠詞要用 la。"},{"es":"¿Me traigo la cuenta, por favor?","why":"traigo 是「我帶來」，請對方拿要用 trae。"},{"es":"¿Me trae cuenta, por favor?","why":"cuenta 要加冠詞 la，指這桌的帳單。"}],"chunks":[{"es":"¿Me trae","zh":"可以拿給我嗎"},{"es":"la cuenta","zh":"帳單"},{"es":"por favor?","zh":"麻煩了"}],"note":"多人一起結帳時可改成 ¿Nos trae…?。","tags":["冠詞","por favor"]},{"id":"cafe-023","scene":"點餐","zh":"我要沙拉和雞肉。","es":"Quiero la ensalada y el pollo.","alt":["Quiero ensalada y pollo."],"tiles":["Quiero","la","ensalada","y","el","pollo"],"distractors":["los","las"],"options":[{"es":"Quiero el ensalada y el pollo.","why":"ensalada 是陰性，冠詞用 la。"},{"es":"Quiero la ensalada y la pollo.","why":"pollo 是陽性，冠詞用 el。"},{"es":"Quieres la ensalada y el pollo.","why":"quieres 是「你要」。"}],"chunks":[{"es":"Quiero","zh":"我要"},{"es":"la ensalada","zh":"（那份）沙拉"},{"es":"y el pollo","zh":"和雞肉"}],"note":"已看過菜單的特定餐點，常用定冠詞 el／la。","tags":["querer","冠詞"]},{"id":"cafe-024","scene":"點甜點","zh":"我想要一份起司蛋糕。","es":"Me gustaría una tarta de queso.","alt":["Quiero una tarta de queso."],"tiles":["Me","gustaría","una","tarta","de","queso"],"distractors":["un","con"],"options":[{"es":"Me gustaría un tarta de queso.","why":"tarta 是陰性，冠詞用 una。"},{"es":"Me gustaría una tarta con queso.","why":"蛋糕口味固定用 de queso。"},{"es":"Me gusta una tarta de queso.","why":"想要要用 me gustaría，不是 me gusta。"}],"chunks":[{"es":"Me gustaría","zh":"我想要（客氣）"},{"es":"una tarta","zh":"一份蛋糕"},{"es":"de queso","zh":"起司口味"}],"note":"tarta 是蛋糕或派，pastel 也常見。","tags":["me gustaría","冠詞"]},{"id":"cafe-025","scene":"稱讚食物","zh":"湯很好喝，謝謝。","es":"La sopa está muy buena, gracias.","alt":["La sopa está riquísima, gracias."],"tiles":["La","sopa","está","muy","buena","gracias"],"distractors":["bueno","es"],"options":[{"es":"La sopa está muy bueno, gracias.","why":"sopa 是陰性，形容詞用 buena。"},{"es":"La sopa es muy buena, gracias.","why":"評論當下味道用 estar。"},{"es":"El sopa está muy buena, gracias.","why":"sopa 是陰性，冠詞用 la。"}],"chunks":[{"es":"La sopa","zh":"湯"},{"es":"está muy buena","zh":"很好喝"},{"es":"gracias","zh":"謝謝"}],"note":"形容詞要和名詞性數一致，這是點餐的常見陷阱。","tags":["estar（味道溫度）","冠詞"]},{"id":"cafe-026","scene":"點咖啡","zh":"我要一杯不加糖的咖啡，麻煩了。","es":"Quiero un café sin azúcar, por favor.","alt":["Un café sin azúcar, por favor.","Me gustaría un café sin azúcar, por favor."],"tiles":["Quiero","un","café","sin","azúcar","por","favor"],"distractors":["con","una"],"options":[{"es":"Quiero un café con azúcar, por favor.","why":"sin 是「不加」，con 是「加」。"},{"es":"Quiero una café sin azúcar, por favor.","why":"café 是陽性，冠詞要用 un。"},{"es":"Quieres un café sin azúcar, por favor.","why":"quieres 是「你要」。"}],"chunks":[{"es":"Quiero un café","zh":"我要一杯咖啡"},{"es":"sin azúcar","zh":"不加糖"},{"es":"por favor","zh":"麻煩了"}],"note":"sin＋名詞 表示「不要加…」。","tags":["querer","por favor"]},{"id":"cafe-027","scene":"點餐","zh":"我要今日套餐，麻煩了。","es":"Quiero el menú del día, por favor.","alt":["Me gustaría el menú del día, por favor."],"tiles":["Quiero","el","menú","del","día","por","favor"],"distractors":["la","una"],"options":[{"es":"Quiero la menú del día, por favor.","why":"menú 是陽性，冠詞用 el。"},{"es":"Quiero el menú de día, por favor.","why":"固定說 del día，不是 de día。"},{"es":"Quieres el menú del día, por favor.","why":"quieres 是「你要」。"}],"chunks":[{"es":"Quiero","zh":"我要"},{"es":"el menú del día","zh":"今日套餐"},{"es":"por favor","zh":"麻煩了"}],"note":"中午 13 到 16 點最常點 menú del día。","tags":["querer","冠詞"]},{"id":"cafe-028","scene":"點餐","zh":"一個可頌和一杯咖啡，麻煩了。","es":"Un cruasán y un café, por favor.","alt":["Quiero un cruasán y un café, por favor."],"tiles":["Un","cruasán","y","un","café","por","favor"],"distractors":["una","e"],"options":[{"es":"Una cruasán y un café, por favor.","why":"cruasán 是陽性，冠詞用 un。"},{"es":"Un cruasán y una café, por favor.","why":"café 是陽性，冠詞用 un。"},{"es":"Un cruasán o un café, por favor.","why":"要兩樣都點，連接詞用 y。"}],"chunks":[{"es":"Un cruasán","zh":"一個可頌"},{"es":"y un café","zh":"和一杯咖啡"},{"es":"por favor","zh":"麻煩了"}],"note":"早餐常見組合 café y tostada 也很道地。","tags":["冠詞","por favor"]},{"id":"cafe-029","scene":"反映問題","zh":"咖啡冷了，可以換一杯嗎？","es":"El café está frío, ¿me trae otro?","alt":["El café está frío, ¿me trae uno nuevo?"],"tiles":["El","café","está","frío","me","trae","otro"],"distractors":["otra","es"],"options":[{"es":"El café es frío, ¿me trae otro?","why":"溫度是暫時狀態，用 estar。"},{"es":"El café está frío, ¿me trae otra?","why":"café 是陽性，用 otro。"},{"es":"El café está frío, ¿me traigo otro?","why":"traigo 是「我帶來」，請對方拿要用 trae。"}],"chunks":[{"es":"El café está frío","zh":"咖啡冷了"},{"es":"¿me trae otro?","zh":"可以給我另一杯嗎"}],"note":"先陳述問題再請求換新，語氣最自然。","tags":["estar（味道溫度）","冠詞"]},{"id":"cafe-030","scene":"問價格","zh":"甜點和咖啡各多少錢？","es":"¿Cuánto cuestan el postre y el café?","alt":["¿Cuánto cuesta el postre y cuánto cuesta el café?"],"tiles":["Cuánto","cuestan","el","postre","y","el","café"],"distractors":["cuesta","cuántos"],"options":[{"es":"¿Cuánto cuestas el postre y el café?","why":"cuestan 配第三人稱複數，不是 cuestas。"},{"es":"¿Cuántos cuestan el postre y el café?","why":"價格用 cuánto，不是 cuántos。"},{"es":"¿Cuánto cuestan la postre y el café?","why":"postre 是陽性，冠詞用 el。"}],"chunks":[{"es":"¿Cuánto cuestan","zh":"多少錢（複數）"},{"es":"el postre y el café","zh":"甜點和咖啡"}],"note":"主詞有兩樣時，cuesta 要改成 cuestan。","tags":["數字與價格","疑問詞"]},{"id":"cafe-031","scene":"詢問飲食","zh":"菜單上有無麩質的餐點嗎？","es":"¿Hay algo sin gluten en la carta?","alt":["¿Tienen algo sin gluten en la carta?"],"tiles":["Hay","algo","sin","gluten","en","la","carta"],"distractors":["está","el"],"options":[{"es":"¿Está algo sin gluten en la carta?","why":"問「有沒有」用 hay，不用 estar。"},{"es":"¿Hay algo con gluten en la carta?","why":"sin 才是「不含」，con 是「含」。"},{"es":"¿Hay alguien sin gluten en la carta?","why":"alguien 指人，東西要用 algo。"}],"chunks":[{"es":"¿Hay algo","zh":"有沒有什麼"},{"es":"sin gluten","zh":"不含麩質"},{"es":"en la carta?","zh":"在菜單上"}],"note":"carta 是菜單；有過敏或飲食限制時很實用。","tags":["hay","冠詞"]},{"id":"cafe-032","scene":"結帳","zh":"我想刷卡付款，麻煩了。","es":"Me gustaría pagar con tarjeta, por favor.","alt":["Quiero pagar con tarjeta, por favor."],"tiles":["Me","gustaría","pagar","con","tarjeta","por","favor"],"distractors":["en","una"],"options":[{"es":"Me gusta pagar con tarjeta, por favor.","why":"gusta 是「喜歡」，想要用 gustaría。"},{"es":"Me gustaría pagar en tarjeta, por favor.","why":"「用卡付款」固定說 con tarjeta。"},{"es":"Me gustaría pagar con tarjetas, por favor.","why":"只刷一張卡，名詞用單數。"}],"chunks":[{"es":"Me gustaría pagar","zh":"我想付款"},{"es":"con tarjeta","zh":"用信用卡"},{"es":"por favor","zh":"麻煩了"}],"note":"付現說 en efectivo，刷卡說 con tarjeta。","tags":["me gustaría","por favor"]},{"id":"cafe-033","scene":"點餐","zh":"我要魚，但不要醬汁，麻煩了。","es":"Quiero el pescado, pero sin salsa, por favor.","alt":["Me gustaría el pescado sin salsa, por favor."],"tiles":["Quiero","el","pescado","pero","sin","salsa","por","favor"],"distractors":["con","la"],"options":[{"es":"Quiero el pescado, pero con salsa, por favor.","why":"sin 才是「不要」，con 是「加」。"},{"es":"Quiero la pescado, pero sin salsa, por favor.","why":"pescado 是陽性，冠詞用 el。"},{"es":"Quiero el pescado, pero no salsa, por favor.","why":"「不要」用 sin，不是 no。"}],"chunks":[{"es":"Quiero el pescado","zh":"我要魚"},{"es":"pero sin salsa","zh":"但不要醬"},{"es":"por favor","zh":"麻煩了"}],"note":"pero sin… 是修改餐點最常用的句型。","tags":["querer","por favor"]},{"id":"cafe-034","scene":"點餐","zh":"我要兩杯咖啡和三份西班牙烘蛋，麻煩了。","es":"Quiero dos cafés y tres tortillas, por favor.","alt":["Dos cafés y tres tortillas, por favor."],"tiles":["Quiero","dos","cafés","y","tres","tortillas","por","favor"],"distractors":["uno","cuatro"],"options":[{"es":"Quiero dos café y tres tortillas, por favor.","why":"數字大於一，名詞要用複數。"},{"es":"Quiero dos cafés y tres tortilla, por favor.","why":"tres 之後 tortilla 要用複數。"},{"es":"Quieres dos cafés y tres tortillas, por favor.","why":"quieres 是「你要」。"}],"chunks":[{"es":"Quiero dos cafés","zh":"我要兩杯咖啡"},{"es":"y tres tortillas","zh":"和三份烘蛋"},{"es":"por favor","zh":"麻煩了"}],"note":"tortilla española 是西班牙馬鈴薯烘蛋。","tags":["querer","數字與價格"]},{"id":"cafe-035","scene":"稱讚食物","zh":"全部都很好吃，可以結帳嗎？","es":"Todo está muy rico, ¿me trae la cuenta?","alt":["Todo está muy bueno, ¿me trae la cuenta?"],"tiles":["Todo","está","muy","rico","me","trae","la","cuenta"],"distractors":["es","todos"],"options":[{"es":"Todo es muy rico, ¿me trae la cuenta?","why":"評論當下味道用 estar。"},{"es":"Todo está muy rico, ¿me trae el cuenta?","why":"cuenta 是陰性，冠詞用 la。"},{"es":"Todos está muy rico, ¿me trae la cuenta?","why":"todo 指「全部」，要單數 todo。"}],"chunks":[{"es":"Todo está muy rico","zh":"全部都很好吃"},{"es":"¿me trae la cuenta?","zh":"可以拿帳單給我嗎"}],"note":"先稱讚再要帳單，是很有禮貌的結束方式。","tags":["estar（味道溫度）","冠詞"]},{"id":"cafe-036","scene":"點咖啡","zh":"我要一杯少奶的咖啡，麻煩了。","es":"Quiero un café con poca leche, por favor.","alt":["Un café con poca leche, por favor."],"tiles":["Quiero","un","café","con","poca","leche","por","favor"],"distractors":["una","poco"],"options":[{"es":"Quiero un café con poco leche, por favor.","why":"leche 是陰性，要用 poca。"},{"es":"Quiero una café con poca leche, por favor.","why":"café 是陽性，冠詞用 un。"},{"es":"Quiero un café con pocas leche, por favor.","why":"leche 單數，poca 也用單數。"}],"chunks":[{"es":"Quiero un café","zh":"我要一杯咖啡"},{"es":"con poca leche","zh":"少一點牛奶"},{"es":"por favor","zh":"麻煩了"}],"note":"poco／poca 形容詞要跟名詞性別一致。","tags":["querer","冠詞"]},{"id":"cafe-037","scene":"點飲料","zh":"我想要一杯不加牛奶的熱茶，麻煩了。","es":"Me gustaría un té caliente sin leche, por favor.","alt":["Quiero un té caliente sin leche, por favor."],"tiles":["Me","gustaría","un","té","caliente","sin","leche","por","favor"],"distractors":["con","una"],"options":[{"es":"Me gustaría un té caliente con leche, por favor.","why":"sin 是「不加」，con 是「加」。"},{"es":"Me gustaría una té caliente sin leche, por favor.","why":"té 是陽性，冠詞用 un。"},{"es":"Me gustaría un caliente té sin leche, por favor.","why":"形容詞放名詞後面，caliente 要在 té 後。"}],"chunks":[{"es":"Me gustaría","zh":"我想要（客氣）"},{"es":"un té caliente","zh":"一杯熱茶"},{"es":"sin leche, por favor","zh":"不加牛奶，麻煩了"}],"note":"形容詞放名詞後面：té caliente、café frío。","tags":["me gustaría","冠詞"]},{"id":"cafe-038","scene":"點餐","zh":"一份辣醬薯塊，大家分著吃，麻煩了。","es":"Una ración de patatas bravas para compartir, por favor.","alt":["Quiero una ración de patatas bravas para compartir, por favor."],"tiles":["Una","ración","de","patatas","bravas","para","compartir","por","favor"],"distractors":["un","a"],"options":[{"es":"Un ración de patatas bravas para compartir, por favor.","why":"ración 是陰性，冠詞用 una。"},{"es":"Una ración de patatas bravas por compartir, por favor.","why":"表示目的，用 para compartir。"},{"es":"Una ración de patata brava para compartir, por favor.","why":"patatas bravas 是固定複數名稱。"}],"chunks":[{"es":"Una ración de patatas bravas","zh":"一份辣醬薯塊"},{"es":"para compartir","zh":"分著吃"},{"es":"por favor","zh":"麻煩了"}],"note":"ración 是大份、適合分食的小菜。","tags":["冠詞","por favor"]},{"id":"cafe-039","scene":"點餐","zh":"我要雞肉飯和一杯啤酒。","es":"Quiero el pollo con arroz y una cerveza.","alt":["Quiero pollo con arroz y una cerveza.","Un pollo con arroz y una cerveza, por favor."],"tiles":["Quiero","el","pollo","con","arroz","y","una","cerveza"],"distractors":["la","un"],"options":[{"es":"Quiero la pollo con arroz y una cerveza.","why":"pollo 是陽性，冠詞用 el。"},{"es":"Quiero el pollo con arroz y un cerveza.","why":"cerveza 是陰性，冠詞用 una。"},{"es":"Quiero el pollo sin arroz y una cerveza.","why":"sin 是「不要」，con 是「配」。"}],"chunks":[{"es":"Quiero","zh":"我要"},{"es":"el pollo con arroz","zh":"雞肉配飯"},{"es":"y una cerveza","zh":"和一杯啤酒"}],"note":"con＋食物 表示「配著…」。","tags":["querer","冠詞"]},{"id":"cafe-040","scene":"反映問題","zh":"不好意思，我點的是拿鐵，不是茶。","es":"Disculpe, quiero un café con leche, no un té.","alt":["Perdone, quiero un café con leche, no un té."],"tiles":["Disculpe","quiero","un","café","con","leche","no","un","té"],"distractors":["una","quieres"],"options":[{"es":"Disculpe, quiero una café con leche, no un té.","why":"café 是陽性，冠詞用 un。"},{"es":"Disculpe, quieres un café con leche, no un té.","why":"對服務生說自己要用 quiero。"},{"es":"Disculpe, quiero un café con leche, no una té.","why":"té 是陽性，冠詞用 un。"}],"chunks":[{"es":"Disculpe","zh":"不好意思"},{"es":"quiero un café con leche","zh":"我要的是拿鐵"},{"es":"no un té","zh":"不是茶"}],"note":"no＋名詞 用來更正對方弄錯的內容。","tags":["querer","冠詞"]}]},{"id":"direcciones","title":"問路與交通","stage":2,"level":"A1","grammar":["ir","ir a + 不定式","estar + 地點","現在式規則動詞","介系詞","命令式固定片語","疑問詞","hay","冠詞","數字","方位詞"],"intro":"問路的骨架是 ¿Dónde está…? 與 ¿Cómo llego a…?，開口前先說 Perdone／Disculpe；指路常聽到 siga（直走）和 gire（轉彎）。說自己要去哪用 voy a＋地點，計畫用 voy a＋動詞原形，時間用 ¿A qué hora…?。","items":[{"id":"direcciones-001","scene":"機場","zh":"我要去機場。","es":"Voy al aeropuerto.","alt":["Yo voy al aeropuerto."],"tiles":["Voy","al","aeropuerto"],"distractors":["vas","en"],"options":[{"es":"Va al aeropuerto.","why":"說自己要去，要用 voy。"},{"es":"Voy a aeropuerto.","why":"a＋el 要縮寫成 al。"},{"es":"Voy en el aeropuerto.","why":"去某地用 a，不是 en。"}],"chunks":[{"es":"Voy","zh":"我去（ir）"},{"es":"al aeropuerto","zh":"到機場（a＋el）"}],"note":"a＋el 一定縮寫成 al，是最常見的細節。","tags":["ir","介系詞"]},{"id":"direcciones-002","scene":"聽指路","zh":"一直直走。","es":"Siga todo recto.","alt":["Siga recto."],"tiles":["Siga","todo","recto"],"distractors":["sigue","gire"],"options":[{"es":"Sigue todo recto.","why":"對陌生人用 siga，sigue 是 tú。"},{"es":"Gire todo recto.","why":"直走用 siga，gire 是轉彎。"},{"es":"Siga todo recta.","why":"recto 在這裡是副詞，不變化。"}],"chunks":[{"es":"Siga","zh":"請繼續（usted 命令式）"},{"es":"todo recto","zh":"一直直走"}],"note":"siga 和 gire 先當固定片語記，聽得懂就好。","tags":["命令式固定片語","方位詞"]},{"id":"direcciones-003","scene":"指路","zh":"那裡很遠。","es":"Está muy lejos.","alt":["Está bastante lejos."],"tiles":["Está","muy","lejos"],"distractors":["es","cerca"],"options":[{"es":"Es muy lejos.","why":"位置用 estar，不用 ser。"},{"es":"Está muy lejo.","why":"lejos 是副詞，不能去掉 s。"},{"es":"Está muy cerca.","why":"cerca 是「近」，與原意相反。"}],"chunks":[{"es":"Está","zh":"它在"},{"es":"muy lejos","zh":"很遠"}],"note":"後面加 de＋地點：Está lejos del centro。","tags":["estar + 地點","介系詞"]},{"id":"direcciones-004","scene":"路上","zh":"附近有銀行嗎？","es":"¿Hay un banco cerca?","alt":["¿Hay algún banco por aquí?"],"tiles":["Hay","un","banco","cerca"],"distractors":["está","una"],"options":[{"es":"¿Está un banco cerca?","why":"問「有沒有」用 hay，不用 estar。"},{"es":"¿Hay una banco cerca?","why":"banco 是陽性，冠詞用 un。"},{"es":"¿Hay un banco lejos?","why":"問附近要用 cerca，lejos 是「遠」。"}],"chunks":[{"es":"¿Hay un banco","zh":"有銀行嗎"},{"es":"cerca?","zh":"附近"}],"note":"hay 用來問「有沒有」，estar 才是問「在哪裡」。","tags":["hay","介系詞"]},{"id":"direcciones-005","scene":"車站","zh":"車站在哪裡？","es":"¿Dónde está la estación?","alt":["Perdone, ¿dónde está la estación?"],"tiles":["Dónde","está","la","estación"],"distractors":["es","el"],"options":[{"es":"¿Dónde es la estación?","why":"問位置用 estar，不用 ser。"},{"es":"¿Dónde está el estación?","why":"estación 是陰性，冠詞用 la。"},{"es":"¿Dónde están la estación?","why":"estación 單數，動詞用 está。"}],"chunks":[{"es":"¿Dónde está","zh":"在哪裡"},{"es":"la estación?","zh":"車站"}],"note":"前面加 Perdone 開口，對陌生人更有禮貌。","tags":["estar + 地點","疑問詞"]},{"id":"direcciones-006","scene":"郵局","zh":"不好意思，郵局在哪裡？","es":"Perdone, ¿dónde está Correos?","alt":["Disculpe, ¿dónde está Correos?"],"tiles":["Perdone","dónde","está","Correos"],"distractors":["es","están"],"options":[{"es":"Perdone, ¿dónde es Correos?","why":"問位置用 estar。"},{"es":"Perdone, ¿dónde están Correos?","why":"Correos 是機構名稱，用單數 está。"},{"es":"Perdone, ¿dónde está el Correos?","why":"機構名稱前通常不加冠詞。"}],"chunks":[{"es":"Perdone","zh":"不好意思"},{"es":"¿dónde está","zh":"在哪裡"},{"es":"Correos?","zh":"郵局（西班牙郵政）"}],"note":"Correos 是西班牙郵政的名稱，也直接指郵局。","tags":["estar + 地點","命令式固定片語"]},{"id":"direcciones-007","scene":"問廁所","zh":"請問廁所在哪裡？","es":"¿Dónde está el baño?","alt":["¿Dónde están los servicios?"],"tiles":["Dónde","está","el","baño"],"distractors":["es","la"],"options":[{"es":"¿Dónde es el baño?","why":"問位置用 estar。"},{"es":"¿Dónde está la baño?","why":"baño 是陽性，冠詞用 el。"},{"es":"¿Dónde están el baño?","why":"baño 單數，動詞用 está。"}],"chunks":[{"es":"¿Dónde está","zh":"在哪裡"},{"es":"el baño?","zh":"廁所"}],"note":"西班牙餐廳也常說 los aseos 或 los servicios。","tags":["estar + 地點","疑問詞"]},{"id":"direcciones-008","scene":"買票","zh":"麻煩給我一張票。","es":"Un billete, por favor.","alt":["Quiero un billete, por favor."],"tiles":["Un","billete","por","favor"],"distractors":["una","de"],"options":[{"es":"Una billete, por favor.","why":"billete 是陽性，冠詞用 un。"},{"es":"Un billetes, por favor.","why":"只要一張，用單數。"},{"es":"Un billete, por favor favor.","why":"por favor 說一次就夠。"}],"chunks":[{"es":"Un billete","zh":"一張票"},{"es":"por favor","zh":"麻煩了"}],"note":"西班牙說 billete，拉美常說 boleto。","tags":["冠詞","命令式固定片語"]},{"id":"direcciones-009","scene":"聽指路","zh":"請在這裡右轉。","es":"Gire a la derecha.","alt":["Aquí, gire a la derecha."],"tiles":["Gire","a","la","derecha"],"distractors":["gira","el"],"options":[{"es":"Gira a la derecha.","why":"對陌生人用 gire，gira 是 tú。"},{"es":"Gire a el derecha.","why":"a la derecha 是固定說法。"},{"es":"Gire a la derechas.","why":"方向用單數 la derecha。"}],"chunks":[{"es":"Gire","zh":"請轉彎"},{"es":"a la derecha","zh":"往右"}],"note":"路口常聽到 Gire a la derecha／izquierda。","tags":["命令式固定片語","介系詞"]},{"id":"direcciones-010","scene":"聽指路","zh":"請在這裡左轉。","es":"Gire a la izquierda.","alt":["Aquí, gire a la izquierda."],"tiles":["Gire","a","la","izquierda"],"distractors":["gira","el"],"options":[{"es":"Gira a la izquierda.","why":"對陌生人用 gire，gira 是 tú。"},{"es":"Gire a el izquierda.","why":"a la izquierda 是固定說法。"},{"es":"Gire en la izquierda.","why":"轉向用 a，不是 en。"}],"chunks":[{"es":"Gire","zh":"請轉彎"},{"es":"a la izquierda","zh":"往左"}],"note":"izquierda 的拼字容易錯，注意有 qu。","tags":["命令式固定片語","介系詞"]},{"id":"direcciones-011","scene":"指路","zh":"就在這附近。","es":"Está cerca de aquí.","alt":["Está muy cerca de aquí."],"tiles":["Está","cerca","de","aquí"],"distractors":["es","lejos"],"options":[{"es":"Es cerca de aquí.","why":"位置用 estar，不用 ser。"},{"es":"Está cerca aquí.","why":"cerca 後面要加 de。"},{"es":"Está lejos de aquí.","why":"lejos 是「遠」，與原意相反。"}],"chunks":[{"es":"Está","zh":"它在"},{"es":"cerca de aquí","zh":"離這裡很近"}],"note":"cerca de＋地點 表示「離…近」。","tags":["estar + 地點","介系詞"]},{"id":"direcciones-012","scene":"問路","zh":"請問怎麼去飯店？","es":"¿Cómo llego al hotel?","alt":["Perdone, ¿cómo llego al hotel?"],"tiles":["Cómo","llego","al","hotel"],"distractors":["llega","voy"],"options":[{"es":"¿Cómo llega al hotel?","why":"自己問路用第一人稱 llego。"},{"es":"¿Cómo llego a el hotel?","why":"a＋el 要縮寫成 al。"},{"es":"¿Cómo llego en hotel?","why":"到某地用 a，不是 en。"}],"chunks":[{"es":"¿Cómo llego","zh":"我怎麼到"},{"es":"al hotel?","zh":"飯店（a＋el）"}],"note":"問怎麼去最常用句型：¿Cómo llego a…?。","tags":["現在式規則動詞","疑問詞"]},{"id":"direcciones-013","scene":"迷路","zh":"我想我迷路了。","es":"Creo que estoy perdido.","alt":[],"tiles":["Creo","que","estoy","perdido"],"distractors":["soy","muy"],"options":[{"es":"Creo que soy perdido.","why":"迷路是暫時狀態，用 estar。"},{"es":"Creo que estoy perdidos.","why":"主詞是單數的「我」，perdido 不加 s。"},{"es":"Creo que estás perdido.","why":"說自己用 estoy，estás 是「你」。"}],"chunks":[{"es":"Creo que","zh":"我想／我覺得"},{"es":"estoy perdido","zh":"我迷路了"}],"note":"女生說 estoy perdida。","tags":["現在式規則動詞","estar + 地點"]},{"id":"direcciones-014","scene":"計畫","zh":"我要搭地鐵。","es":"Voy a tomar el metro.","alt":["Voy a coger el metro."],"tiles":["Voy","a","tomar","el","metro"],"distractors":["tomo","en"],"options":[{"es":"Voy tomar el metro.","why":"ir a＋不定式，a 不能省。"},{"es":"Voy a toma el metro.","why":"a 之後動詞要用原形 tomar。"},{"es":"Vas a tomar el metro.","why":"說自己要做，要用 voy。"}],"chunks":[{"es":"Voy a","zh":"我要（ir a）"},{"es":"tomar","zh":"搭乘"},{"es":"el metro","zh":"地鐵"}],"note":"西班牙常說 coger el metro；拉美部分地區 coger 有粗俗意思，改用 tomar。","tags":["ir a + 不定式","ir"]},{"id":"direcciones-015","scene":"月台","zh":"這班火車到巴塞隆納嗎？","es":"¿Este tren va a Barcelona?","alt":["¿Va este tren a Barcelona?"],"tiles":["Este","tren","va","a","Barcelona"],"distractors":["vas","esta"],"options":[{"es":"¿Este tren vas a Barcelona?","why":"tren 是第三人稱，動詞用 va。"},{"es":"¿Esta tren va a Barcelona?","why":"tren 是陽性，指示詞用 este。"},{"es":"¿Este tren va en Barcelona?","why":"去某地用 a，不是 en。"}],"chunks":[{"es":"¿Este tren va","zh":"這班火車去不去"},{"es":"a Barcelona?","zh":"到巴塞隆納"}],"note":"上車前先確認終點，是旅行最實用的句子。","tags":["ir","介系詞"]},{"id":"direcciones-016","scene":"問路","zh":"不好意思，請問廣場怎麼走？","es":"Perdone, ¿cómo llego a la plaza?","alt":["Disculpe, ¿cómo llego a la plaza?"],"tiles":["Perdone","cómo","llego","a","la","plaza"],"distractors":["en","el"],"options":[{"es":"Perdone, ¿cómo llego a el plaza?","why":"plaza 是陰性，冠詞用 la。"},{"es":"Perdone, ¿cómo llego en la plaza?","why":"到某地用 a，不是 en。"},{"es":"Perdone, ¿cómo llega a la plaza?","why":"自己問路要用 llego。"}],"chunks":[{"es":"Perdone","zh":"不好意思"},{"es":"¿cómo llego","zh":"我怎麼到"},{"es":"a la plaza?","zh":"廣場"}],"note":"plaza 是西班牙城市的核心地標，問路很實用。","tags":["現在式規則動詞","介系詞"]},{"id":"direcciones-017","scene":"搭公車","zh":"我搭公車去車站。","es":"Voy a la estación en autobús.","alt":["Voy en autobús a la estación."],"tiles":["Voy","a","la","estación","en","autobús"],"distractors":["por","con"],"options":[{"es":"Voy a la estación por autobús.","why":"搭乘交通工具用 en。"},{"es":"Voy a la estación con autobús.","why":"搭乘交通工具用 en，不是 con。"},{"es":"Va a la estación en autobús.","why":"說自己要去，要用 voy。"}],"chunks":[{"es":"Voy a la estación","zh":"我去車站"},{"es":"en autobús","zh":"搭公車"}],"note":"en＋交通工具（不加冠詞）：en metro、en taxi。","tags":["ir","介系詞"]},{"id":"direcciones-018","scene":"問票價","zh":"地鐵票多少錢？","es":"¿Cuánto cuesta un billete de metro?","alt":["¿Cuánto vale un billete de metro?"],"tiles":["Cuánto","cuesta","un","billete","de","metro"],"distractors":["cuestan","una"],"options":[{"es":"¿Cuánto cuestan un billete de metro?","why":"billete 單數，動詞用 cuesta。"},{"es":"¿Cuánto cuesta una billete de metro?","why":"billete 是陽性，冠詞用 un。"},{"es":"¿Cuántos cuesta un billete de metro?","why":"價格用 cuánto，不是 cuántos。"}],"chunks":[{"es":"¿Cuánto cuesta","zh":"多少錢"},{"es":"un billete","zh":"一張票"},{"es":"de metro","zh":"地鐵的"}],"note":"坐地鐵也可買 abono（月票或多次票）。","tags":["疑問詞","介系詞"]},{"id":"direcciones-019","scene":"買票","zh":"公車票在哪裡買？","es":"¿Dónde compro un billete de autobús?","alt":["¿Dónde compro el billete de autobús?"],"tiles":["Dónde","compro","un","billete","de","autobús"],"distractors":["compra","una"],"options":[{"es":"¿Dónde compra un billete de autobús?","why":"自己問要用 compro。"},{"es":"¿Dónde compro una billete de autobús?","why":"billete 是陽性，冠詞用 un。"},{"es":"¿Dónde compro un billete en autobús?","why":"「公車的票」用 de autobús。"}],"chunks":[{"es":"¿Dónde compro","zh":"我在哪裡買"},{"es":"un billete","zh":"一張票"},{"es":"de autobús?","zh":"公車的"}],"note":"-ar 動詞 comprar 第一人稱 compro。","tags":["現在式規則動詞","疑問詞"]},{"id":"direcciones-020","scene":"公車上","zh":"不好意思，這班公車有到市中心嗎？","es":"Disculpe, ¿este autobús va al centro?","alt":["Perdone, ¿este autobús va al centro?"],"tiles":["Disculpe","este","autobús","va","al","centro"],"distractors":["vas","esta"],"options":[{"es":"Disculpe, ¿este autobús vas al centro?","why":"autobús 是第三人稱，動詞用 va。"},{"es":"Disculpe, ¿esta autobús va al centro?","why":"autobús 是陽性，指示詞用 este。"},{"es":"Disculpe, ¿este autobús va a el centro?","why":"a＋el 要縮寫成 al。"}],"chunks":[{"es":"Disculpe","zh":"不好意思"},{"es":"¿este autobús va","zh":"這班公車去不去"},{"es":"al centro?","zh":"市中心"}],"note":"ir 的第三人稱 va 常用來問交通工具到哪裡。","tags":["ir","介系詞"]},{"id":"direcciones-021","scene":"叫車","zh":"我要叫一輛計程車去機場。","es":"Quiero un taxi para el aeropuerto.","alt":["Necesito un taxi para el aeropuerto."],"tiles":["Quiero","un","taxi","para","el","aeropuerto"],"distractors":["una","a"],"options":[{"es":"Quiero una taxi para el aeropuerto.","why":"taxi 是陽性，冠詞用 un。"},{"es":"Quiero un taxi para la aeropuerto.","why":"aeropuerto 是陽性，冠詞用 el。"},{"es":"Quieres un taxi para el aeropuerto.","why":"說自己要用 quiero。"}],"chunks":[{"es":"Quiero un taxi","zh":"我要一輛計程車"},{"es":"para el aeropuerto","zh":"到機場去"}],"note":"para＋地點 表示「前往…」的目的地。","tags":["介系詞","現在式規則動詞"]},{"id":"direcciones-022","scene":"和朋友","zh":"我們坐計程車去飯店好嗎？","es":"¿Vamos al hotel en taxi, vale?","alt":["¿Vamos en taxi al hotel, vale?"],"tiles":["Vamos","al","hotel","en","taxi","vale"],"distractors":["van","vais"],"options":[{"es":"¿Van al hotel en taxi, vale?","why":"包含自己要用 vamos。"},{"es":"¿Vamos al hotel por taxi, vale?","why":"搭乘用 en，不是 por。"},{"es":"¿Vamos a el hotel en taxi, vale?","why":"a＋el 要縮寫成 al。"}],"chunks":[{"es":"¿Vamos al hotel","zh":"我們去飯店吧"},{"es":"en taxi","zh":"坐計程車"},{"es":"vale?","zh":"好嗎（口語）"}],"note":"vale 是西班牙口語的「好、可以」。","tags":["ir","介系詞"]},{"id":"direcciones-023","scene":"指路","zh":"博物館在銀行旁邊。","es":"El museo está al lado del banco.","alt":["El museo está junto al banco."],"tiles":["El","museo","está","al","lado","del","banco"],"distractors":["es","junto"],"options":[{"es":"El museo es al lado del banco.","why":"位置用 estar，不用 ser。"},{"es":"El museo está al lado de el banco.","why":"de＋el 要縮寫成 del。"},{"es":"El museo está a lado del banco.","why":"固定說法是 al lado de。"}],"chunks":[{"es":"El museo","zh":"博物館"},{"es":"está al lado","zh":"在旁邊"},{"es":"del banco","zh":"銀行（de＋el）"}],"note":"al lado de＋地點 = 在…旁邊，de＋el 要縮成 del。","tags":["estar + 地點","介系詞"]},{"id":"direcciones-024","scene":"指路","zh":"公車站在廣場附近。","es":"La parada está cerca de la plaza.","alt":["La parada está muy cerca de la plaza."],"tiles":["La","parada","está","cerca","de","la","plaza"],"distractors":["es","lejos"],"options":[{"es":"La parada es cerca de la plaza.","why":"位置用 estar，不用 ser。"},{"es":"El parada está cerca de la plaza.","why":"parada 是陰性，冠詞用 la。"},{"es":"La parada está lejos de la plaza.","why":"lejos 是「遠」，與原意相反。"}],"chunks":[{"es":"La parada","zh":"（公車）站"},{"es":"está cerca de","zh":"在…附近"},{"es":"la plaza","zh":"廣場"}],"note":"parada 是公車或電車的站牌、停靠站。","tags":["estar + 地點","介系詞"]},{"id":"direcciones-025","scene":"問時刻","zh":"末班公車幾點到？","es":"¿A qué hora llega el último autobús?","alt":["¿A qué hora pasa el último autobús?"],"tiles":["A","qué","hora","llega","el","último","autobús"],"distractors":["llegan","la"],"options":[{"es":"¿A qué hora llegan el último autobús?","why":"autobús 單數，動詞用 llega。"},{"es":"¿A qué hora llega la último autobús?","why":"autobús 是陽性，冠詞用 el。"},{"es":"¿Qué hora llega el último autobús?","why":"問幾點要說 a qué hora。"}],"chunks":[{"es":"¿A qué hora","zh":"幾點"},{"es":"llega","zh":"到達"},{"es":"el último autobús?","zh":"最後一班公車"}],"note":"問「幾點」固定用 ¿A qué hora…?。","tags":["疑問詞","現在式規則動詞"]},{"id":"direcciones-026","scene":"問時刻","zh":"下一班地鐵幾點發車？","es":"¿A qué hora sale el próximo metro?","alt":["¿Cuándo sale el próximo metro?"],"tiles":["A","qué","hora","sale","el","próximo","metro"],"distractors":["salen","la"],"options":[{"es":"¿A qué hora salen el próximo metro?","why":"metro 單數，動詞用 sale。"},{"es":"¿A qué hora sale la próximo metro?","why":"metro 是陽性，冠詞用 el。"},{"es":"¿A qué hora sale el próximo metros?","why":"只問一班，用單數 metro。"}],"chunks":[{"es":"¿A qué hora","zh":"幾點"},{"es":"sale","zh":"出發"},{"es":"el próximo metro?","zh":"下一班地鐵"}],"note":"sale 是 salir 的第三人稱，問發車時間都用它。","tags":["疑問詞","現在式規則動詞"]},{"id":"direcciones-027","scene":"公車上","zh":"我要在下一站下車。","es":"Voy a bajar en la próxima parada.","alt":["Me bajo en la próxima parada."],"tiles":["Voy","a","bajar","en","la","próxima","parada"],"distractors":["bajo","el"],"options":[{"es":"Voy bajar en la próxima parada.","why":"ir a＋原形，a 不能省。"},{"es":"Voy a bajar en el próxima parada.","why":"parada 是陰性，冠詞用 la。"},{"es":"Voy a bajo en la próxima parada.","why":"a 之後動詞要用原形 bajar。"}],"chunks":[{"es":"Voy a bajar","zh":"我要下車"},{"es":"en la próxima parada","zh":"在下一站"}],"note":"近未來用 ir a＋原形：Voy a bajar。","tags":["ir a + 不定式","介系詞"]},{"id":"direcciones-028","scene":"聽指路","zh":"在紅綠燈左轉。","es":"Gire a la izquierda en el semáforo.","alt":["En el semáforo, gire a la izquierda."],"tiles":["Gire","a","la","izquierda","en","el","semáforo"],"distractors":["gira","al"],"options":[{"es":"Gira a la izquierda en el semáforo.","why":"對陌生人用 gire，gira 是 tú。"},{"es":"Gire a la izquierda al semáforo.","why":"地點「在紅綠燈」用 en。"},{"es":"Gire a la izquierda en la semáforo.","why":"semáforo 是陽性，冠詞用 el。"}],"chunks":[{"es":"Gire a la izquierda","zh":"左轉"},{"es":"en el semáforo","zh":"在紅綠燈"}],"note":"en el semáforo／en la esquina 都是常見的轉彎地標。","tags":["命令式固定片語","介系詞"]},{"id":"direcciones-029","scene":"迷路","zh":"我在地圖上找不到那條街。","es":"No encuentro la calle en el mapa.","alt":["No veo la calle en el mapa."],"tiles":["No","encuentro","la","calle","en","el","mapa"],"distractors":["encuentra","lo"],"options":[{"es":"No encuentra la calle en el mapa.","why":"說自己找不到，要用 encuentro。"},{"es":"No encuentro el calle en el mapa.","why":"calle 是陰性，冠詞用 la。"},{"es":"No encuentro la calle a el mapa.","why":"在地圖上用 en el mapa。"}],"chunks":[{"es":"No encuentro","zh":"我找不到"},{"es":"la calle","zh":"那條街"},{"es":"en el mapa","zh":"在地圖上"}],"note":"encontrar 是不規則動詞，先當固定句記就好。","tags":["現在式規則動詞","介系詞"]},{"id":"direcciones-030","scene":"問路","zh":"不好意思，這附近有藥局嗎？","es":"Disculpe, ¿hay una farmacia cerca de aquí?","alt":["Perdone, ¿hay una farmacia por aquí?"],"tiles":["Disculpe","hay","una","farmacia","cerca","de","aquí"],"distractors":["está","un"],"options":[{"es":"Disculpe, ¿está una farmacia cerca de aquí?","why":"問「有沒有」用 hay，不用 estar。"},{"es":"Disculpe, ¿hay un farmacia cerca de aquí?","why":"farmacia 是陰性，冠詞用 una。"},{"es":"Disculpe, ¿hay una farmacia cerca aquí?","why":"cerca 後面要加 de。"}],"chunks":[{"es":"Disculpe","zh":"不好意思"},{"es":"¿hay una farmacia","zh":"有藥局嗎"},{"es":"cerca de aquí?","zh":"在這附近"}],"note":"問「有沒有」用 hay，問「在哪」才用 estar。","tags":["hay","介系詞"]},{"id":"direcciones-031","scene":"問路","zh":"從市中心怎麼去機場？","es":"¿Cómo llego al aeropuerto desde el centro?","alt":["¿Cómo llego desde el centro al aeropuerto?"],"tiles":["Cómo","llego","al","aeropuerto","desde","el","centro"],"distractors":["llega","en"],"options":[{"es":"¿Cómo llega al aeropuerto desde el centro?","why":"自己問路要用 llego。"},{"es":"¿Cómo llego a aeropuerto desde el centro?","why":"a＋el 要縮寫成 al。"},{"es":"¿Cómo llego al aeropuerto desde centro?","why":"desde 後面的 centro 要加冠詞 el。"}],"chunks":[{"es":"¿Cómo llego","zh":"我怎麼到"},{"es":"al aeropuerto","zh":"機場"},{"es":"desde el centro?","zh":"從市中心"}],"note":"desde＋起點 表示「從…出發」。","tags":["現在式規則動詞","疑問詞"]},{"id":"direcciones-032","scene":"聽指路","zh":"一直走，然後右轉。","es":"Siga recto y después gire a la derecha.","alt":["Siga recto y luego gire a la derecha."],"tiles":["Siga","recto","y","después","gire","a","la","derecha"],"distractors":["sigue","izquierda"],"options":[{"es":"Siga recto y después gire a la izquierda.","why":"izquierda 是左，右要用 derecha。"},{"es":"Sigue recto y después gire a la derecha.","why":"同一句要用 usted，siga 配 gire。"},{"es":"Siga recto y después gire en la derecha.","why":"轉向用 a，不是 en。"}],"chunks":[{"es":"Siga recto","zh":"一直走"},{"es":"y después","zh":"然後"},{"es":"gire a la derecha","zh":"右轉"}],"note":"指路常把 siga recto 和 gire 連在一起說。","tags":["命令式固定片語","介系詞"]},{"id":"direcciones-033","scene":"問路","zh":"不好意思，十號公車站在哪裡？","es":"Perdone, ¿dónde está la parada del autobús número diez?","alt":["Disculpe, ¿dónde está la parada del autobús número diez?"],"tiles":["Perdone","dónde","está","la","parada","del","autobús","número","diez"],"distractors":["es","el"],"options":[{"es":"Perdone, ¿dónde es la parada del autobús número diez?","why":"問位置用 estar。"},{"es":"Perdone, ¿dónde está el parada del autobús número diez?","why":"parada 是陰性，冠詞用 la。"},{"es":"Perdone, ¿dónde está la parada de el autobús número diez?","why":"de＋el 要縮寫成 del。"}],"chunks":[{"es":"Perdone","zh":"不好意思"},{"es":"¿dónde está la parada","zh":"站牌在哪裡"},{"es":"del autobús número diez?","zh":"十號公車"}],"note":"路線號碼前可加 número，口語常直接說 el diez。","tags":["estar + 地點","數字"]},{"id":"direcciones-034","scene":"和朋友","zh":"你搭地鐵還是公車去車站？","es":"¿Vas a la estación en metro o en autobús?","alt":["¿Vas en metro o en autobús a la estación?"],"tiles":["Vas","a","la","estación","en","metro","o","en","autobús"],"distractors":["va","por"],"options":[{"es":"¿Va a la estación en metro o en autobús?","why":"對朋友用 vas，va 是 usted。"},{"es":"¿Vas a la estación por metro o por autobús?","why":"搭乘交通工具用 en。"},{"es":"¿Vas a el estación en metro o en autobús?","why":"estación 是陰性，用 a la。"}],"chunks":[{"es":"¿Vas a la estación","zh":"你去車站嗎"},{"es":"en metro","zh":"搭地鐵"},{"es":"o en autobús?","zh":"還是搭公車"}],"note":"朋友之間用 tú 形式 vas。","tags":["ir","介系詞"]},{"id":"direcciones-035","scene":"問路","zh":"不好意思，請問走路怎麼去主廣場？","es":"Disculpe, ¿cómo llego a la plaza Mayor a pie?","alt":["Perdone, ¿cómo llego a la plaza Mayor andando?"],"tiles":["Disculpe","cómo","llego","a","la","plaza","Mayor","a","pie"],"distractors":["en","el"],"options":[{"es":"Disculpe, ¿cómo llego a la plaza Mayor en pie?","why":"「走路」固定說 a pie。"},{"es":"Disculpe, ¿cómo llego a el plaza Mayor a pie?","why":"plaza 是陰性，冠詞用 la。"},{"es":"Disculpe, ¿cómo llega a la plaza Mayor a pie?","why":"自己問路要用 llego。"}],"chunks":[{"es":"Disculpe","zh":"不好意思"},{"es":"¿cómo llego a la plaza Mayor","zh":"主廣場怎麼走"},{"es":"a pie?","zh":"走路"}],"note":"a pie 是固定說法，表示步行。","tags":["現在式規則動詞","介系詞"]},{"id":"direcciones-036","scene":"買票","zh":"麻煩給我一張到塞維亞的來回票。","es":"Un billete de ida y vuelta a Sevilla, por favor.","alt":["Quiero un billete de ida y vuelta a Sevilla, por favor."],"tiles":["Un","billete","de","ida","y","vuelta","a","Sevilla","por","favor"],"distractors":["en","una"],"options":[{"es":"Un billete de ida y vuelta en Sevilla, por favor.","why":"目的地用 a，不是 en。"},{"es":"Una billete de ida y vuelta a Sevilla, por favor.","why":"billete 是陽性，冠詞用 un。"},{"es":"Un billete de ida a vuelta a Sevilla, por favor.","why":"來回票固定說 ida y vuelta。"}],"chunks":[{"es":"Un billete de ida y vuelta","zh":"一張來回票"},{"es":"a Sevilla","zh":"到塞維亞"},{"es":"por favor","zh":"麻煩了"}],"note":"單程票說 un billete de ida（或 sencillo）。","tags":["介系詞","命令式固定片語"]},{"id":"direcciones-037","scene":"指路","zh":"飯店在地鐵站旁邊。","es":"El hotel está al lado de la estación de metro.","alt":["El hotel está junto a la estación de metro."],"tiles":["El","hotel","está","al","lado","de","la","estación","de","metro"],"distractors":["es","del"],"options":[{"es":"El hotel es al lado de la estación de metro.","why":"位置用 estar，不用 ser。"},{"es":"El hotel está al lado del estación de metro.","why":"estación 是陰性，用 de la。"},{"es":"El hotel está a lado de la estación de metro.","why":"固定說法是 al lado de。"}],"chunks":[{"es":"El hotel","zh":"飯店"},{"es":"está al lado de","zh":"在…旁邊"},{"es":"la estación de metro","zh":"地鐵站"}],"note":"al lado de 後接陰性名詞時不縮寫：de la。","tags":["estar + 地點","介系詞"]},{"id":"direcciones-038","scene":"和朋友","zh":"我朋友和我明天要去參觀博物館。","es":"Mi amigo y yo vamos a visitar el museo mañana.","alt":["Mi amigo y yo visitamos el museo mañana."],"tiles":["Mi","amigo","y","yo","vamos","a","visitar","el","museo","mañana"],"distractors":["voy","va"],"options":[{"es":"Mi amigo y yo voy a visitar el museo mañana.","why":"主詞是「我們」，要用 vamos。"},{"es":"Mi amigo y yo vamos visitar el museo mañana.","why":"ir a＋原形，a 不能省。"},{"es":"Mi amigo y yo vamos a visito el museo mañana.","why":"a 之後動詞要用原形 visitar。"}],"chunks":[{"es":"Mi amigo y yo","zh":"我朋友和我"},{"es":"vamos a visitar","zh":"我們要去參觀"},{"es":"el museo mañana","zh":"（參觀）博物館，在明天"}],"note":"ir a＋原形 是最簡單的「未來計畫」。","tags":["ir a + 不定式","ir"]},{"id":"direcciones-039","scene":"月台","zh":"開往瓦倫西亞的火車九點十五分出發。","es":"El tren a Valencia sale a las nueve y cuarto.","alt":["El tren para Valencia sale a las nueve y cuarto."],"tiles":["El","tren","a","Valencia","sale","a","las","nueve","y","cuarto"],"distractors":["salen","la"],"options":[{"es":"El tren a Valencia salen a las nueve y cuarto.","why":"tren 單數，動詞用 sale。"},{"es":"El tren a Valencia sale a la nueve y cuarto.","why":"時間用 a las nueve，nueve 是複數。"},{"es":"El tren a Valencia sale en las nueve y cuarto.","why":"時間用 a，不是 en。"}],"chunks":[{"es":"El tren a Valencia","zh":"開往瓦倫西亞的火車"},{"es":"sale","zh":"出發"},{"es":"a las nueve y cuarto","zh":"九點十五分"}],"note":"y cuarto＝過一刻，y media＝半。","tags":["現在式規則動詞","數字"]},{"id":"direcciones-040","scene":"和朋友","zh":"你要搭幾點的火車去馬德里？","es":"¿A qué hora vas a tomar el tren a Madrid?","alt":["¿A qué hora coges el tren a Madrid?"],"tiles":["A","qué","hora","vas","a","tomar","el","tren","a","Madrid"],"distractors":["va","en"],"options":[{"es":"¿A qué hora va a tomar el tren a Madrid?","why":"對朋友用 vas，va 是 usted。"},{"es":"¿A qué hora vas tomar el tren a Madrid?","why":"ir a＋原形，a 不能省。"},{"es":"¿Qué hora vas a tomar el tren a Madrid?","why":"問幾點要說 a qué hora。"}],"chunks":[{"es":"¿A qué hora","zh":"幾點"},{"es":"vas a tomar","zh":"你要搭"},{"es":"el tren a Madrid?","zh":"去馬德里的火車"}],"note":"對朋友用 vas a＋原形，問計畫很自然。","tags":["ir a + 不定式","疑問詞"]}]}]/*ES_PACKS_END*/;
+
+(function(){
+/* ── 常數與工具 ── */
+var LS_KEY = 'espanol_v1';
+var TOAST_KEY = 'espanol_noesvoice_toast_shown';
+var IV = [1,3,7,14,30,60];      // 間隔序列（天）
+var MASTER_IV = 14;             // iv >= 14 視為已掌握
+var ROUND = 10;
+var RATES = [0.8,1,1.15], RATE_NAMES = ['慢','正常','快'];
+var MODES = [{k:'options',n:'四選一'},{k:'tiles',n:'積木排序'},{k:'typing',n:'打字'}];
+var MODE_KEYS = ['options','tiles','typing'];
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function pad(n){ return (n<10?'0':'')+n; }
+function dstr(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function today(){ return dstr(new Date()); }
+function addDays(s,n){ var p=s.split('-'); return dstr(new Date(+p[0],+p[1]-1,+p[2]+n)); }
+var PUNCT = /[.,;:!?¿¡"“”«»()\[\]…—–]/g;
+function toks(s){ return String(s==null?'':s).replace(PUNCT,' ').split(/\s+/).filter(Boolean); }
+function norm(s,strict){
+  var r = toks(s).join(' ').toLowerCase();
+  if(!strict){ r = r.replace(/ñ/g,'\u0001').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\u0001/g,'ñ'); }
+  return r;
+}
+function sameArr(a,b){ if(a.length!==b.length) return false; for(var i=0;i<a.length;i++) if(a[i]!==b[i]) return false; return true; }
+
+/* ── 資料與檢查 ── */
+var PACKS = Array.isArray(ES_PACKS) ? ES_PACKS : [];
+var ITEMS = [], BYID = {}, BADN = 0;
+PACKS.forEach(function(p){
+  (p.items||[]).forEach(function(it){
+    if(BYID[it.id]){ console.warn('[es] 重複的 item id：'+it.id); return; }
+    it._pack = p.id;
+    var auto = toks(it.es);
+    if(Array.isArray(it.tiles) && it.tiles.length && sameArr(it.tiles,auto)){ it._bad=false; it._tiles=it.tiles; }
+    else { it._bad=true; it._tiles=auto; BADN++; console.warn('[es] tiles 與 es 不一致：'+it.id, it.tiles, auto); }
+    BYID[it.id]=it; ITEMS.push(it);
+  });
+});
+function packOf(id){ for(var i=0;i<PACKS.length;i++) if(PACKS[i].id===id) return PACKS[i]; return null; }
+
+/* ── 儲存 ── */
+function defaults(){ return {srs:{},history:[],settings:{mode:'options',strictAccent:true,voice:'',rate:1},meta:{created:today()}}; }
+function load(){
+  try{
+    var s = JSON.parse(localStorage.getItem(LS_KEY));
+    if(!s || typeof s!=='object') return defaults();
+    var d = defaults();
+    if(!s.srs || typeof s.srs!=='object' || Array.isArray(s.srs)) s.srs = d.srs;
+    if(!Array.isArray(s.history)) s.history = [];
+    s.settings = Object.assign({}, d.settings, (s.settings && typeof s.settings==='object') ? s.settings : {});
+    if(MODE_KEYS.indexOf(s.settings.mode)<0) s.settings.mode = 'options';
+    if(RATES.indexOf(s.settings.rate)<0) s.settings.rate = 1;
+    s.meta = Object.assign({}, d.meta, (s.meta && typeof s.meta==='object') ? s.meta : {});
+    return s;
+  }catch(e){ return defaults(); }
+}
+var store = load();
+function save(){ try{ if(store.history.length>5000) store.history = store.history.slice(-5000); localStorage.setItem(LS_KEY, JSON.stringify(store)); }catch(e){} }
+
+/* ── SRS ── */
+function isDue(it){ var s=store.srs[it.id]; return !!s && s.due<=today(); }
+function isSeen(it){ return !!store.srs[it.id]; }
+function isMastered(it){ var s=store.srs[it.id]; return !!s && s.iv>=MASTER_IV; }
+function dueList(list){ return list.filter(isDue); }
+function record(q,ok,mode){
+  var id=q.it.id, t=today();
+  q.prev = store.srs[id] ? JSON.stringify(store.srs[id]) : null;
+  var s = store.srs[id] ? JSON.parse(q.prev) : {iv:0,due:t,n:0,wrong:0,last:t};
+  s.n = (s.n||0)+1;
+  if(ok){ var idx=IV.indexOf(s.iv); s.iv = (s.iv>0 && idx<0) ? IV[IV.length-1] : (idx<0 ? IV[0] : IV[Math.min(idx+1,IV.length-1)]); }
+  else { s.iv = IV[0]; s.wrong = (s.wrong||0)+1; }
+  s.due = addDays(t,s.iv); s.last = t;
+  store.srs[id]=s;
+  store.history.push({d:t,id:id,mode:mode,ok:!!ok});
+  save();
+}
+function undoRecord(q){
+  if(q.prev===null || q.prev===undefined) delete store.srs[q.it.id]; else store.srs[q.it.id]=JSON.parse(q.prev);
+  store.history.pop();
+}
+function pickRound(list,n,dueOnly,early){
+  var t=today(), due=[], unseen=[], rest=[];
+  list.forEach(function(it){ var s=store.srs[it.id]; if(!s) unseen.push(it); else if(s.due<=t) due.push(it); else rest.push(it); });
+  var byDue=function(a,b){ return store.srs[a.id].due<store.srs[b.id].due?-1:1; };
+  due.sort(byDue); rest.sort(byDue);
+  var pick;
+  if(dueOnly) pick = due.slice(0,n);
+  else if(early) pick = rest.slice(0,n);
+  else pick = due.concat(shuffle(unseen), rest).slice(0,n);
+  return shuffle(pick);
+}
+function streak(){
+  var set={}; store.history.forEach(function(h){ set[h.d]=1; });
+  var d=today(), n=0;
+  if(!set[d]) d=addDays(d,-1);
+  while(set[d]){ n++; d=addDays(d,-1); }
+  return n;
+}
+
+/* ── 發音 ── */
+var SPEECH_OK = (typeof window!=='undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance!=='undefined');
+var _voices=[], _noEs=false, _toastTimer=null;
+function loadVoices(){ try{ _voices = speechSynthesis.getVoices()||[]; }catch(e){ _voices=[]; } }
+function esVoices(){ return _voices.filter(function(v){ return /^es-/i.test(v.lang); }); }
+function onVoicesReady(){ loadVoices(); fillVoiceSel(); }
+if(SPEECH_OK){
+  loadVoices();
+  if(typeof speechSynthesis.addEventListener==='function') speechSynthesis.addEventListener('voiceschanged', onVoicesReady);
+  else speechSynthesis.onvoiceschanged = onVoicesReady;
+}
+function showToast(msg){
+  var t=document.getElementById('toast'); if(!t) return;
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(function(){ t.style.opacity='0'; },3600);
+}
+function fillVoiceSel(){
+  var sel=document.getElementById('voicesel'); if(!sel) return;
+  var list = SPEECH_OK ? esVoices() : [];
+  _noEs = SPEECH_OK && !list.length;
+  if(!list.length){ sel.style.display='none'; sel.innerHTML=''; return; }
+  var cur = store.settings.voice||'';
+  var short = function(n){ return n.replace(/^Microsoft\s+/i,'').replace(/\s*-\s*(Spanish.*|Espa[nñ]ol.*)$/i,'').trim(); };
+  var groups={}; list.forEach(function(v){ (groups[v.lang]=groups[v.lang]||[]).push(v); });
+  var html='<option value="">自動（推薦）</option>';
+  Object.keys(groups).sort().forEach(function(lang){
+    html+='<optgroup label="'+esc(lang)+'">';
+    groups[lang].forEach(function(v){ html+='<option value="'+esc(v.name)+'"'+(cur===v.name?' selected':'')+'>'+esc(short(v.name))+'</option>'; });
+    html+='</optgroup>';
+  });
+  sel.innerHTML=html; sel.style.display=''; sel.value = cur;
+  if(sel.value!==cur) sel.value='';
+}
+function scoreVoice(v){
+  var s=0;
+  if(/Natural/i.test(v.name)) s+=100; if(/Neural/i.test(v.name)) s+=80; if(/Google/i.test(v.name)) s+=60;
+  if(/Online/i.test(v.name)) s+=20; if(/Desktop/i.test(v.name)) s-=50; if(v.localService===false) s+=10;
+  if(v.lang==='es-ES') s+=30;
+  return s;
+}
+function pickVoice(){
+  if(!_voices.length) loadVoices();
+  var list=esVoices(); if(!list.length) return null;
+  var chosen=store.settings.voice;
+  if(chosen){ for(var i=0;i<list.length;i++) if(list[i].name===chosen) return list[i]; }
+  return list.slice().sort(function(a,b){ return scoreVoice(b)-scoreVoice(a); })[0];
+}
+function speak(text){
+  if(!SPEECH_OK || !text) return;
+  if(!_voices.length) loadVoices();
+  if(!esVoices().length){
+    _noEs=true;
+    var shown=false; try{ shown=!!localStorage.getItem(TOAST_KEY); localStorage.setItem(TOAST_KEY,'1'); }catch(e){}
+    if(!shown) showToast('此裝置沒有西班牙文語音，發音可能不準，可到系統設定安裝');
+  }
+  try{
+    speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(String(text));
+    u.lang='es-ES'; u.rate=store.settings.rate||1;
+    var v=pickVoice();
+    if(v){ try{ u.voice=v; u.lang=v.lang; }catch(e){} }
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function updateRateBtn(){ var b=document.getElementById('ratebtn'); if(b) b.textContent = RATE_NAMES[Math.max(0,RATES.indexOf(store.settings.rate))]; }
+
+/* ── 狀態 ── */
+var ui = {tab:'home', pr:{pack:null}, sess:null, vq:'', bank:{msg:null,confirmClear:false,showText:false}};
+var TABS = [
+  {key:'home',name:'總覽',icon:'🏠'},
+  {key:'practice',name:'情境練習',icon:'📝'},
+  {key:'review',name:'複習',icon:'🔁'},
+  {key:'vocab',name:'片語',icon:'📖'},
+  {key:'bank',name:'題庫',icon:'🗂'}
+];
+
+var wantTop=false;
+function render(){
+  var dueN = dueList(ITEMS).length;
+  document.getElementById('tabs').innerHTML = TABS.map(function(t){
+    var badge = (t.key==='review' && dueN>0) ? '<span class="n">'+dueN+'</span>' : '';
+    return '<button role="tab" data-act="nav" data-tab="'+t.key+'" class="'+(ui.tab===t.key?'on':'')+'" aria-selected="'+(ui.tab===t.key)+'"><span class="tab-ic">'+t.icon+'</span><span class="tab-tx">'+t.name+badge+'</span></button>';
+  }).join('');
+  updateRateBtn();
+  var fn = {home:rHome,practice:rPractice,review:rReview,vocab:rVocab,bank:rBank}[ui.tab];
+  document.getElementById('view').innerHTML = fn();
+  var ti=document.getElementById('typein'); if(ti) try{ ti.focus(); }catch(e){}
+  if(wantTop){ wantTop=false; window.scrollTo(0,0); }
+}
+
+/* ── 共用片段 ── */
+function modeSeg(){
+  return '<div class="seg" role="group" aria-label="作答模式">'+MODES.map(function(m){
+    return '<button data-act="setMode" data-m="'+m.k+'" class="'+(store.settings.mode===m.k?'on':'')+'">'+m.n+'</button>';
+  }).join('')+'</div>';
+}
+function packStats(p){
+  var items = ITEMS.filter(function(i){ return i._pack===p.id; });
+  var seen = items.filter(isSeen).length, mas = items.filter(isMastered).length;
+  return {total:items.length, seen:seen, mas:mas, due:items.filter(isDue).length};
+}
+function noData(){ return '<div class="card empty">尚未載入任何情境包。請先在 packs/ 放入 JSON，並執行 <code>node build.js</code>。</div>'; }
+
+/* ── 總覽 ── */
+function rHome(){
+  if(!PACKS.length) return noData();
+  var due=dueList(ITEMS).length, mas=ITEMS.filter(isMastered).length;
+  var rows = PACKS.map(function(p){
+    var st=packStats(p), pc = st.total? Math.round(st.mas/st.total*100):0;
+    return '<div class="catrow"><div class="nm">'+esc(p.title)+'</div><div class="bar"><i style="width:'+pc+'%"></i></div><div class="pc">見 '+st.seen+' · 掌握 '+st.mas+' / '+st.total+'</div></div>';
+  }).join('');
+  return '<div class="statgrid">'+
+    '<div class="stat"><div class="v">'+due+'</div><div class="k">今日到期</div></div>'+
+    '<div class="stat"><div class="v">'+streak()+'</div><div class="k">連續天數</div></div>'+
+    '<div class="stat"><div class="v">'+store.history.length+'</div><div class="k">累計作答</div></div>'+
+    '<div class="stat"><div class="v">'+mas+'<span class="faint" style="font-size:15px"> / '+ITEMS.length+'</span></div><div class="k">已掌握句子</div></div>'+
+    '</div>'+
+    '<div class="card"><div class="lbl">各情境包進度</div>'+rows+
+    '<div class="acts"><button class="btn primary" data-act="startReview">開始複習'+(due?'（'+due+'）':'')+'</button><button class="btn ghost" data-act="nav" data-tab="practice">選情境練習</button></div>'+
+    (BADN? '<div class="callout">有 '+BADN+' 題 tiles 與標準答案不一致，到「題庫」可查看。</div>':'')+'</div>';
+}
+
+/* ── 情境練習 ── */
+function rPractice(){
+  if(ui.sess && ui.sess.origin==='practice') return rSession();
+  if(!PACKS.length) return noData();
+  if(ui.pr.pack){
+    var all = ui.pr.pack==='*', p = all?null:packOf(ui.pr.pack);
+    var title = all?'全部混合':p.title;
+    var n = all?ITEMS.length:packStats(p).total;
+    return '<div class="card"><button class="btn ghost small" data-act="prBack">← 返回</button>'+
+      '<h2 style="margin:12px 0 4px">'+esc(title)+'</h2><div class="muted">共 '+n+' 題，一輪 '+ROUND+' 題（到期優先、其次新題）</div>'+
+      '<div class="lbl" style="margin-top:16px">作答模式</div>'+modeSeg()+
+      '<div class="acts"><button class="btn primary" data-act="startPractice">開始練習</button></div></div>';
+  }
+  var cards = PACKS.map(function(p){
+    var st=packStats(p);
+    return '<button class="packcard" data-act="pickPack" data-id="'+esc(p.id)+'">'+
+      '<div class="tagline"><span class="tag">階段 '+esc(p.stage)+'</span><span class="tag diff">'+esc(p.level)+'</span>'+(st.due?'<span class="tag clay">到期 '+st.due+'</span>':'')+'</div>'+
+      '<h3>'+esc(p.title)+'</h3><div class="intro">'+esc(p.intro||'')+'</div>'+
+      '<div class="tagline">'+(p.grammar||[]).map(function(g){ return '<span class="tag brass">'+esc(g)+'</span>'; }).join('')+'</div>'+
+      '<div class="faint" style="font-size:13px;margin-top:8px">已見 '+st.seen+' · 已掌握 '+st.mas+' / '+st.total+'</div></button>';
+  }).join('');
+  return '<div class="lbl">選擇情境包</div>'+
+    '<button class="packcard" data-act="pickPack" data-id="*"><h3 style="margin:0">全部混合</h3><div class="intro" style="margin:0">從所有情境包挑題（到期優先）</div></button>'+cards;
+}
+
+/* ── 複習 ── */
+function rReview(){
+  if(ui.sess && ui.sess.origin==='review') return rSession();
+  if(!PACKS.length) return noData();
+  var due=dueList(ITEMS).length, rest=ITEMS.filter(function(i){ return isSeen(i)&&!isDue(i); }).length;
+  var body;
+  if(due>0){
+    body='<div class="sum-score"><div class="big">'+due+'</div><div class="muted">題今日到期（本輪最多 '+ROUND+' 題）</div></div>'+
+      '<div class="lbl" style="margin-top:14px">作答模式</div>'+modeSeg()+
+      '<div class="acts"><button class="btn primary" data-act="startReview2">開始</button></div>';
+  } else {
+    body='<div class="empty">今天沒有到期的題目 🎉</div>'+
+      '<div class="lbl">作答模式</div>'+modeSeg()+
+      '<div class="acts"><button class="btn primary" data-act="startEarly"'+(rest?'':' disabled')+'>提前複習 '+ROUND+' 題</button></div>'+
+      (rest?'':'<div class="faint" style="font-size:13px;margin-top:8px">尚無已作答的題目可提前複習，先去「情境練習」吧。</div>');
+  }
+  return '<div class="card">'+body+'</div>';
+}
+
+/* ── 練習流程 ── */
+function startSession(origin,kind,packId){
+  var list = (packId && packId!=='*') ? ITEMS.filter(function(i){ return i._pack===packId; }) : ITEMS;
+  var round = pickRound(list,ROUND,kind==='due',kind==='early');
+  if(!round.length){ showToast('沒有可練習的題目'); return; }
+  ui.sess = {origin:origin,kind:kind,packId:packId,list:round,idx:0,results:[],q:null};
+  ui.sess.q = makeQ(round[0]);
+  ui.tab = origin; wantTop=true; render();
+}
+function makeQ(it){
+  var mode = store.settings.mode, q={it:it,mode:mode,answered:false,ok:null,prev:null,picked:null,input:'',ans:[],userText:''};
+  if(mode==='options'){
+    q.choices = shuffle([{es:it.es,ok:true}].concat((it.options||[]).map(function(o){ return {es:o.es,why:o.why,ok:false}; })));
+  } else if(mode==='tiles'){
+    q.pool = shuffle(it._tiles.concat(it.distractors||[]).map(function(w,i){ return {w:w,i:i}; }));
+  }
+  return q;
+}
+function finishAnswer(q,ok){
+  q.answered=true; q.ok=ok;
+  record(q,ok,q.mode);
+  ui.sess.results[ui.sess.idx]=ok;
+}
+function rSession(){
+  var s=ui.sess;
+  if(s.idx>=s.list.length) return rSummary();
+  var q=s.q, it=q.it, pc=Math.round(s.idx/s.list.length*100);
+  var h = '<div class="card"><div class="q-head"><span>第 '+(s.idx+1)+' / '+s.list.length+' 題 · '+esc((MODES.filter(function(m){return m.k===q.mode;})[0]||{}).n)+'</span><button class="btn ghost small" data-act="quit">結束</button></div>'+
+    '<div class="prog"><i style="width:'+pc+'%"></i></div>'+
+    '<div class="q-scene">'+esc(it.scene)+'</div>'+
+    '<div class="q-zh"><span>'+esc(it.zh)+'</span>'+(q.answered?'<button class="speakbtn" data-act="speakItem" aria-label="播放發音">🔊</button>':'')+'</div>';
+  if(q.mode==='options') h+=bOptions(q);
+  else if(q.mode==='tiles') h+=bTiles(q);
+  else h+=bTyping(q);
+  if(q.answered) h+=bFeedback(q);
+  return h+'</div>';
+}
+function bOptions(q){
+  return '<div class="opts">'+q.choices.map(function(c,i){
+    var cls='opt';
+    if(q.answered){ if(c.ok) cls+=' correct'; else if(q.picked===i) cls+=' wrong'; else cls+=' dim'; }
+    return '<button class="'+cls+'" data-act="optPick" data-i="'+i+'"'+(q.answered?' disabled':'')+'><span class="abc">'+'ABCD'.charAt(i)+'</span><span>'+esc(c.es)+'</span></button>';
+  }).join('')+'</div>';
+}
+function bTiles(q){
+  var usedSet={}; q.ans.forEach(function(i){ usedSet[i]=1; });
+  var cls = q.answered ? (q.ok?' ok':' bad') : '';
+  var ansH = q.ans.length ? q.ans.map(function(pi){ var t=q.pool[pi]; return '<button class="tile" data-act="tileBack" data-i="'+pi+'"'+(q.answered?' disabled':'')+'>'+esc(t.w)+'</button>'; }).join('') : '<span class="hint-empty">點下方詞塊，依序排成句子</span>';
+  var poolH = q.pool.map(function(t,pi){ return '<button class="tile'+(usedSet[pi]?' used':'')+'" data-act="tilePick" data-i="'+pi+'"'+((q.answered||usedSet[pi])?' disabled':'')+'>'+esc(t.w)+'</button>'; }).join('');
+  return '<div class="ansrow'+cls+'" aria-label="答案列">'+ansH+'</div><div class="pool">'+poolH+'</div>'+
+    (q.answered?'':'<div class="q-foot"><button class="btn ghost" data-act="tileClear"'+(q.ans.length?'':' disabled')+'>清除</button><button class="btn primary" data-act="tileSubmit"'+(q.ans.length?'':' disabled')+'>送出</button></div>');
+}
+function bTyping(q){
+  var strict=store.settings.strictAccent;
+  return '<input type="text" id="typein" class="typein" data-act="typeIn" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="輸入西班牙文…" value="'+esc(q.input)+'"'+(q.answered?' disabled':'')+'>'+
+    '<div class="typeopts"><button class="fchip '+(strict?'on':'')+'" data-act="toggleAccent">重音必須正確：'+(strict?'開':'關')+'</button><span class="faint">不必加標點，大小寫不計</span></div>'+
+    (q.answered?'':'<div class="q-foot"><button class="btn primary" data-act="typeSubmit">送出</button></div>');
+}
+function diffHtml(userText,it){
+  var target={}, st=store.settings.strictAccent;
+  [it.es].concat(it.alt||[]).forEach(function(a){ toks(a).forEach(function(w){ target[norm(w,st)]=1; }); });
+  return toks(userText).map(function(w){ return target[norm(w,store.settings.strictAccent)] ? esc(w) : '<span class="diff-bad">'+esc(w)+'</span>'; }).join(' ');
+}
+function bFeedback(q){
+  var it=q.it, h='<div class="fb"><div class="verdict '+(q.ok?'ok':'no')+'">'+(q.ok?'✓ 答對了':'✗ 再看一次')+(q.override?'（手動改判）':'')+'</div>';
+  if(q.mode==='options' && !q.ok && q.picked!==null && q.choices[q.picked].why) h+='<div class="why">你選的：「'+esc(q.choices[q.picked].es)+'」— '+esc(q.choices[q.picked].why)+'</div>';
+  if(q.mode==='typing' && !q.ok && q.userText) h+='<div class="muted" style="margin-bottom:6px">你的答案：'+diffHtml(q.userText,it)+'</div>';
+  if(q.mode==='tiles' && !q.ok) h+='<div class="muted" style="margin-bottom:6px">你的排列：'+esc(q.userText)+'</div>';
+  h+='<div class="lbl" style="margin:8px 0 2px">標準答案</div><div class="stdans"><span>'+esc(it.es)+'</span><button class="speakbtn" data-act="speakItem" aria-label="播放發音">🔊</button></div>';
+  if(it.alt && it.alt.length) h+='<div class="faint" style="font-size:13px;margin-top:8px">其他說法</div><ul class="altlist">'+it.alt.map(function(a){ return '<li>'+esc(a)+'</li>'; }).join('')+'</ul>';
+  if(it.chunks && it.chunks.length) h+='<div class="chunks"><div class="h">ESPAÑOL</div><div class="h">中文</div>'+it.chunks.map(function(c){ return '<div class="es">'+esc(c.es)+'</div><div>'+esc(c.zh)+'</div>'; }).join('')+'</div>';
+  if(it.note) h+='<div class="note">💡 '+esc(it.note)+'</div>';
+  var last = ui.sess.idx>=ui.sess.list.length-1;
+  h+='<div class="q-foot">'+((q.mode==='typing'&&!q.ok)?'<button class="btn ghost" data-act="override">其實算對</button>':'')+'<button class="btn primary" data-act="next">'+(last?'看結果':'下一題')+'</button></div></div>';
+  return h;
+}
+function rSummary(){
+  var s=ui.sess, ok=s.results.filter(Boolean).length, n=s.list.length;
+  var wrong = s.list.filter(function(it,i){ return !s.results[i]; });
+  var h='<div class="card"><div class="sum-score"><div class="big">'+ok+' / '+n+'</div><div class="muted">本輪答對</div></div>';
+  if(wrong.length) h+='<div class="lbl" style="margin-top:14px">需要加強</div>'+wrong.map(function(it){ return '<div class="wordrow"><span class="w">'+esc(it.es)+'</span><span class="m">'+esc(it.zh)+'</span><button class="speakbtn" data-act="speak" data-t="'+esc(it.es)+'">🔊</button></div>'; }).join('');
+  h+='<div class="acts"><button class="btn primary" data-act="again">再來一輪</button><button class="btn ghost" data-act="quit">回到列表</button><button class="btn ghost" data-act="goHome">回總覽</button></div></div>';
+  return h;
+}
+
+/* ── 片語 ── */
+function chunkList(){
+  var map={}, out=[];
+  ITEMS.forEach(function(it){ (it.chunks||[]).forEach(function(c){
+    var k=norm(c.es,true); if(!k||map[k]) return;
+    map[k]=1; out.push({es:c.es,zh:c.zh,k:k});
+  }); });
+  out.sort(function(a,b){ return a.k.localeCompare(b.k,'es'); });
+  return out;
+}
+function vocabRows(){
+  var q=norm(ui.vq,false), list=chunkList();
+  if(q) list=list.filter(function(c){ return norm(c.es,false).indexOf(q)>=0 || String(c.zh).toLowerCase().indexOf(ui.vq.trim().toLowerCase())>=0; });
+  var shown=list.slice(0,300);
+  if(!shown.length) return '<div class="empty">沒有符合的片語</div>';
+  return shown.map(function(c){ return '<div class="wordrow"><span class="w">'+esc(c.es)+'</span><span class="m">'+esc(c.zh)+'</span><button class="speakbtn" data-act="speak" data-t="'+esc(c.es)+'" aria-label="播放發音">🔊</button></div>'; }).join('')+
+    (list.length>shown.length?'<div class="faint" style="padding:10px 2px;font-size:13px">僅顯示前 300 筆（共 '+list.length+'），請用關鍵字縮小範圍。</div>':'');
+}
+function rVocab(){
+  if(!ITEMS.length) return noData();
+  return '<div class="card"><div class="lbl">片語清單（查閱用，不計入複習）</div>'+
+    '<input type="search" class="search" id="vq" data-act="vfilter" placeholder="關鍵字（西文或中文）" value="'+esc(ui.vq)+'">'+
+    '<div id="vlist">'+vocabRows()+'</div></div>';
+}
+
+/* ── 題庫與資料 ── */
+function rBank(){
+  var h='';
+  if(!PACKS.length) h+=noData();
+  PACKS.forEach(function(p){
+    var st=packStats(p);
+    h+='<details><summary>'+esc(p.title)+' <span class="faint" style="font-weight:400">（階段 '+esc(p.stage)+' · '+st.total+' 題）</span></summary>'+
+      (p.items||[]).map(function(it){ var o=BYID[it.id]||it;
+        return '<div class="bank-row"><div><div>'+esc(it.zh)+(o._bad?' <span class="warn">⚠ tiles 不一致</span>':'')+'</div><div class="es">'+esc(it.es)+'</div></div></div>';
+      }).join('')+'</details>';
+  });
+  var m=ui.bank.msg;
+  h+='<div class="card" style="margin-top:16px"><div class="lbl">資料</div>'+
+    '<div class="acts" style="margin-top:0"><button class="btn ghost" data-act="dl">下載備份 JSON</button><button class="btn ghost" data-act="impfile">匯入備份（合併）</button>'+
+    '<button class="btn ghost" data-act="showText">'+(ui.bank.showText?'隱藏':'顯示')+'備份文字</button></div>'+
+    (ui.bank.showText?'<div style="margin-top:12px"><textarea id="bktext" spellcheck="false">'+esc(JSON.stringify(store))+'</textarea><div class="acts"><button class="btn ghost small" data-act="impText">從文字匯入（合併）</button></div></div>':'')+
+    (m?'<div class="imp-msg '+(m.ok?'ok':'err')+'">'+esc(m.text)+'</div>':'')+
+    '<hr style="border:none;border-top:1px dashed var(--line);margin:16px 0">'+
+    '<div class="typeopts" style="margin-top:0"><button class="fchip '+(store.settings.strictAccent?'on':'')+'" data-act="toggleAccent">打字模式：重音必須正確（'+(store.settings.strictAccent?'開':'關')+'）</button></div>'+
+    '<div class="acts"><button class="btn ghost" style="color:var(--clay)" data-act="clear">'+(ui.bank.confirmClear?'再按一次確認清除全部紀錄':'清除紀錄')+'</button>'+(ui.bank.confirmClear?'<button class="btn ghost" data-act="clearCancel">取消</button>':'')+'</div></div>';
+  return h;
+}
+function mergeImport(raw){
+  var d; try{ d=JSON.parse(raw); }catch(e){ return {ok:false,text:'不是有效的 JSON。'}; }
+  if(!d || typeof d!=='object' || (!d.srs && !Array.isArray(d.history))) return {ok:false,text:'格式不符：找不到 srs 或 history。'};
+  var addSrs=0, addHist=0;
+  if(d.srs && typeof d.srs==='object'){
+    Object.keys(d.srs).forEach(function(id){
+      var r=d.srs[id], l=store.srs[id];
+      if(!r || typeof r!=='object' || typeof r.due!=='string') return;
+      if(!l || String(r.last||'')>String(l.last||'') || ((r.last||'')===(l.last||'') && (r.n||0)>(l.n||0))){ store.srs[id]=r; addSrs++; }
+    });
+  }
+  if(Array.isArray(d.history)){
+    var key=function(h){ return h.d+'|'+h.id+'|'+h.mode+'|'+(h.ok?1:0); };
+    var lc={}, ic={}, imp={};
+    store.history.forEach(function(h){ var k=key(h); lc[k]=(lc[k]||0)+1; });
+    d.history.forEach(function(h){ if(!h||typeof h.d!=='string'||typeof h.id!=='string') return; var k=key(h); ic[k]=(ic[k]||0)+1; if(ic[k]>(lc[k]||0)){ store.history.push({d:h.d,id:h.id,mode:h.mode,ok:!!h.ok}); addHist++; } });
+    store.history.sort(function(a,b){ return a.d<b.d?-1:a.d>b.d?1:0; });
+  }
+  if(d.meta && typeof d.meta.created==='string' && d.meta.created<store.meta.created) store.meta.created=d.meta.created;
+  save();
+  return {ok:true,text:'匯入完成：更新 '+addSrs+' 筆進度、新增 '+addHist+' 筆作答紀錄。'};
+}
+
+/* ── 事件 ── */
+function itemOfQ(){ return ui.sess && ui.sess.q ? ui.sess.q.it : null; }
+function nextQ(){
+  var s=ui.sess; s.idx++;
+  if(s.idx<s.list.length) s.q=makeQ(s.list[s.idx]); else s.q=null;
+  wantTop=true; render();
+}
+var ACTIONS = {
+  nav:function(el){ wantTop=true; ui.tab=el.dataset.tab; render(); },
+  setMode:function(el){ store.settings.mode=el.dataset.m; save(); render(); },
+  pickPack:function(el){ wantTop=true; ui.pr.pack=el.dataset.id; render(); },
+  prBack:function(){ wantTop=true; ui.pr.pack=null; render(); },
+  startPractice:function(){ startSession('practice','normal',ui.pr.pack); },
+  startReview:function(){ ui.tab='review'; if(dueList(ITEMS).length) startSession('review','due',null); else render(); },
+  startReview2:function(){ startSession('review','due',null); },
+  startEarly:function(){ startSession('review','early',null); },
+  goHome:function(){ wantTop=true; ui.sess=null; ui.tab='home'; render(); },
+  quit:function(){ wantTop=true; ui.sess=null; render(); },
+  again:function(){ wantTop=true; var s=ui.sess; startSession(s.origin,s.kind,s.packId); },
+  optPick:function(el){
+    var q=ui.sess.q; if(q.answered) return;
+    q.picked=+el.dataset.i; finishAnswer(q,!!q.choices[q.picked].ok); render();
+  },
+  tilePick:function(el){ var q=ui.sess.q; if(q.answered) return; var i=+el.dataset.i; if(q.ans.indexOf(i)<0) q.ans.push(i); render(); },
+  tileBack:function(el){ var q=ui.sess.q; if(q.answered) return; var i=q.ans.indexOf(+el.dataset.i); if(i>=0) q.ans.splice(i,1); render(); },
+  tileClear:function(){ var q=ui.sess.q; if(q.answered) return; q.ans=[]; render(); },
+  tileSubmit:function(){
+    var q=ui.sess.q; if(q.answered || !q.ans.length) return;
+    var words=q.ans.map(function(i){ return q.pool[i].w; }); q.userText=words.join(' ');
+    var u=norm(q.userText,true), it=q.it;
+    var ok = u===norm(it.es,true) || (it.alt||[]).some(function(a){ return norm(a,true)===u; });
+    finishAnswer(q,ok); render();
+  },
+  typeSubmit:function(){
+    var q=ui.sess.q; if(q.answered) return;
+    var inp=document.getElementById('typein'); var v=inp?inp.value:q.input;
+    if(!String(v).trim()) return;
+    q.input=v; q.userText=v;
+    var strict=store.settings.strictAccent, u=norm(v,strict), it=q.it;
+    var ok = u===norm(it.es,strict) || (it.alt||[]).some(function(a){ return norm(a,strict)===u; });
+    finishAnswer(q,ok); render();
+  },
+  override:function(){
+    var q=ui.sess.q; if(!q.answered || q.ok) return;
+    undoRecord(q); q.override=true; finishAnswer(q,true); render();
+  },
+  toggleAccent:function(){ store.settings.strictAccent=!store.settings.strictAccent; save(); var q=ui.sess&&ui.sess.q; if(q&&q.mode==='typing'&&!q.answered){ var inp=document.getElementById('typein'); if(inp) q.input=inp.value; } render(); },
+  next:function(){ nextQ(); },
+  speakItem:function(){ var it=itemOfQ(); if(it) speak(it.es); },
+  speak:function(el){ speak(el.dataset.t); },
+  dl:function(){
+    try{
+      var blob=new Blob([JSON.stringify(store,null,2)],{type:'application/json'});
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='espanol-backup-'+today().replace(/-/g,'')+'.json';
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+      ui.bank.msg={ok:true,text:'已產生備份檔。若沒有下載，請改用「顯示備份文字」複製。'};
+    }catch(e){ ui.bank.msg={ok:false,text:'下載失敗，請改用「顯示備份文字」。'}; }
+    render();
+  },
+  impfile:function(){ var f=document.getElementById('impfile'); if(f){ f.value=''; f.click(); } },
+  showText:function(){ ui.bank.showText=!ui.bank.showText; render(); },
+  impText:function(){ var t=document.getElementById('bktext'); ui.bank.msg=mergeImport(t?t.value:''); render(); },
+  clear:function(){
+    if(!ui.bank.confirmClear){ ui.bank.confirmClear=true; render(); return; }
+    store=defaults(); save(); ui.bank.confirmClear=false; ui.sess=null; ui.bank.msg={ok:true,text:'已清除所有紀錄。'}; render();
+  },
+  clearCancel:function(){ ui.bank.confirmClear=false; render(); }
+};
+document.addEventListener('click',function(e){
+  var el=e.target.closest ? e.target.closest('[data-act]') : null;
+  if(!el || el.tagName==='INPUT' || el.disabled) return;
+  var fn=ACTIONS[el.dataset.act]; if(fn){ fn(el); }
+});
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.id==='vq'){ ui.vq=t.value; var box=document.getElementById('vlist'); if(box) box.innerHTML=vocabRows(); }
+  else if(t.id==='typein' && ui.sess && ui.sess.q) ui.sess.q.input=t.value;
+});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter' || !ui.sess || !ui.sess.q) return;
+  var q=ui.sess.q, tag=e.target.tagName;
+  if(e.target.id==='typein' && !q.answered){ e.preventDefault(); ACTIONS.typeSubmit(); }
+  else if(q.answered && tag!=='BUTTON' && tag!=='TEXTAREA' && tag!=='SELECT'){ e.preventDefault(); nextQ(); }
+});
+document.getElementById('voicesel').addEventListener('change',function(e){ store.settings.voice=e.target.value||''; save(); });
+document.getElementById('ratebtn').addEventListener('click',function(){
+  var i=RATES.indexOf(store.settings.rate); store.settings.rate=RATES[(i+1)%RATES.length]; save(); updateRateBtn();
+});
+document.getElementById('impfile').addEventListener('change',function(e){
+  var f=e.target.files && e.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ ui.bank.msg=mergeImport(String(r.result)); render(); };
+  r.onerror=function(){ ui.bank.msg={ok:false,text:'讀取檔案失敗。'}; render(); };
+  r.readAsText(f);
+});
+
+fillVoiceSel();
+render();
+})();
+</script>
+</body>
+</html>

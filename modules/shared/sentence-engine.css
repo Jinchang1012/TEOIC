@@ -1,0 +1,49 @@
+/* sentence-engine.css — 句子練習引擎樣式（.se- 前綴；手機優先） */
+.se-root {
+  --se-bg: #ffffff; --se-fg: #1f2933; --se-accent: #2563eb;
+  --se-ok: #15803d; --se-err: #b91c1c; --se-muted: #6b7280;
+  box-sizing: border-box; max-width: 640px; margin: 0 auto; padding: 12px;
+  background: var(--se-bg); color: var(--se-fg);
+  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif; font-size: 16px; line-height: 1.5;
+}
+.se-root *, .se-root *::before, .se-root *::after { box-sizing: border-box; }
+.se-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.se-progress { color: var(--se-muted); font-size: 14px; }
+.se-kind { flex: 1; color: var(--se-accent); font-weight: 600; font-size: 14px; }
+.se-tts { min-width: 40px; min-height: 40px; border: 1px solid var(--se-muted); border-radius: 20px; background: transparent; color: var(--se-fg); font-size: 18px; cursor: pointer; }
+.se-title { margin: 8px 0; }
+.se-zh { font-size: 18px; margin: 8px 0; }
+.se-q { font-size: 20px; font-weight: 600; margin: 8px 0; }
+.se-step { color: var(--se-muted); font-size: 14px; margin: 8px 0; }
+.se-hint { color: var(--se-muted); font-size: 14px; margin: 4px 0; }
+.se-empty, .se-placeholder { color: var(--se-muted); }
+.se-words { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.se-word { padding: 4px 12px; border-radius: 16px; background: var(--se-accent); color: #fff; font-weight: 600; }
+.se-cloze { font-size: 20px; margin: 12px 0; }
+.se-blank { display: inline-block; min-width: 64px; text-align: center; border-bottom: 2px solid var(--se-accent); color: var(--se-accent); }
+.se-blank.se-filled { color: var(--se-ok); }
+.se-answer, .se-bank { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.se-answer { min-height: 56px; padding: 8px; border: 2px dashed var(--se-muted); border-radius: 10px; align-items: center; }
+.se-chip, .se-opt, .se-btn {
+  min-height: 40px; min-width: 40px; padding: 8px 14px; font: inherit; color: var(--se-fg);
+  background: var(--se-bg); border: 1px solid var(--se-muted); border-radius: 8px; cursor: pointer;
+  touch-action: manipulation;
+}
+.se-chip.se-placed { border-color: var(--se-accent); color: var(--se-accent); }
+.se-chip.se-used { opacity: .35; cursor: default; }
+.se-chip.se-wrong { border-color: var(--se-err); color: var(--se-err); background: rgba(185, 28, 28, .08); }
+.se-options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.se-opt { text-align: left; }
+.se-opt-ok { border-color: var(--se-ok); color: var(--se-ok); background: rgba(21, 128, 61, .1); }
+.se-opt-err { border-color: var(--se-err); color: var(--se-err); background: rgba(185, 28, 28, .08); }
+.se-actions { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; }
+.se-btn { background: var(--se-accent); border-color: var(--se-accent); color: #fff; font-weight: 600; }
+.se-btn.se-ghost { background: transparent; color: var(--se-fg); border-color: var(--se-muted); font-weight: 400; }
+.se-btn:disabled { opacity: .45; cursor: default; }
+.se-chip:disabled, .se-opt:disabled { cursor: default; }
+.se-msg { min-height: 24px; margin: 6px 0; font-weight: 600; }
+.se-msg.se-ok { color: var(--se-ok); }
+.se-msg.se-err { color: var(--se-err); }
+.se-sum { font-size: 20px; }
+.se-sumlist { color: var(--se-muted); padding-left: 20px; }
+@media (max-width: 480px) { .se-root { padding: 8px; } .se-zh { font-size: 17px; } }
