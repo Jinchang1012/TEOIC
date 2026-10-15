@@ -46,4 +46,10 @@
 .se-msg.se-err { color: var(--se-err); }
 .se-sum { font-size: 20px; }
 .se-sumlist { color: var(--se-muted); padding-left: 20px; }
+.se-note-wrap { margin: 6px 0; }
+.se-note-toggle { min-height: 32px; padding: 4px 12px; font: inherit; font-size: 14px; color: var(--se-accent); background: transparent; border: 1px solid var(--se-accent); border-radius: 8px; cursor: pointer; touch-action: manipulation; }
+.se-note { margin: 6px 0 0; padding: 8px 12px; border-left: 3px solid var(--se-accent); border-radius: 6px; background: rgba(127, 127, 127, .12); color: var(--se-fg); font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.se-note[hidden] { display: none; }
+.se-note-line { margin: 2px 0; }
+.se-note-tag { display: inline-block; margin-right: 6px; padding: 0 8px; border-radius: 10px; background: var(--se-accent); color: #fff; font-size: 12px; font-weight: 600; line-height: 1.6; vertical-align: baseline; }
 @media (max-width: 480px) { .se-root { padding: 8px; } .se-zh { font-size: 17px; } }

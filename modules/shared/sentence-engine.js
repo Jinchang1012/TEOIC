@@ -191,6 +191,32 @@
     if (onClick) b.addEventListener('click', onClick);
     return b;
   }
+  // 說明區塊：item.note（字串陣列）；ok=true 預設收合並給切換鈕；沒有 note 回 null
+  function noteBlock(item, ok) {
+    var notes = item && item.note;
+    if (!notes || !notes.length) return null;
+    var wrap = el('div', 'se-note-wrap');
+    var box = el('div', 'se-note');
+    notes.forEach(function (line) {
+      var row = el('p', 'se-note-line');
+      var m = /^([^：:]{1,8})[：:]s*([sS]*)$/.exec(String(line));
+      if (m) { row.appendChild(el('span', 'se-note-tag', m[1])); row.appendChild(document.createTextNode(m[2])); }
+      else row.appendChild(document.createTextNode(String(line)));
+      box.appendChild(row);
+    });
+    if (ok) {
+      box.hidden = true;
+      var t = btn('se-note-toggle', '看說明', function () {
+        box.hidden = !box.hidden;
+        t.textContent = box.hidden ? '看說明' : '收起說明';
+      });
+      wrap.appendChild(t);
+    }
+    wrap.appendChild(box);
+    return wrap;
+  }
+  function insertAfter(ref, node) { if (node && ref.parentNode) ref.parentNode.insertBefore(node, ref.nextSibling); }
+
   function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
 
   /* ---------- 引擎 ---------- */
@@ -346,6 +372,7 @@
           if (w >= 0 && kids[w]) kids[w].className += ' se-wrong';
           msg.textContent = '正解：' + main;
         }
+        insertAfter(msg, noteBlock(item, ok));
         checkBtn.disabled = true;
         finishItem(kind, item, ok, extra);
         actions.appendChild(nextBtn());
@@ -404,6 +431,7 @@
           blankEl.textContent = c.correct; blankEl.className += ' se-filled';
           msg.className = 'se-msg ' + (ok ? 'se-ok' : 'se-err');
           msg.textContent = ok ? '正確！' : '正解：' + c.correct;
+          insertAfter(msg, noteBlock(item, ok));
           if (ok) speak(full);
           finishItem('cloze', item, ok);
           actions.appendChild(nextBtn());
@@ -446,11 +474,12 @@
         root_.appendChild(area); root_.appendChild(msg); root_.appendChild(actions);
         build(area, msg, actions);
       }
+      function whyFor(i) { return (q.stepWhy && q.stepWhy[i]) || q.why || ''; }
       function answerStep(ok, msg, actions, btns, goNext, rightText) {
         steps.push(ok);
         btns.forEach(function (b) { b.disabled = true; });
         msg.className = 'se-msg ' + (ok ? 'se-ok' : 'se-err');
-        msg.textContent = ok ? '正確！' : ((rightText ? '正解：' + rightText + '。' : '') + (q.why || ''));
+        msg.textContent = ok ? '正確！' : ((rightText ? '正解：' + rightText + '。' : '') + whyFor(steps.length - 1));
         actions.appendChild(btn('se-btn', steps.length >= 4 ? '看結果' : '下一步', goNext));
       }
 
@@ -516,7 +545,7 @@
               var all = steps.every(function (v) { return v; });
               if (all) speak(correctFrame.f.replace('___', good));
               msg.className = 'se-msg ' + (ok ? 'se-ok' : 'se-err');
-              msg.textContent = ok ? '正確！' : '正解：' + good + '。' + (q.why || '');
+              msg.textContent = ok ? '正確！' : '正解：' + good + '。' + whyFor(3);
               actions.appendChild(btn('se-btn', '看結果', finish));
             });
             btns.push(b); area.appendChild(b);
