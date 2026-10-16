@@ -5,5 +5,5 @@
 window.LANG_MODULES = [
   { id:'en', name:'英文', subtitle:'英文學習', flag:'EN', path:'modules/en/index.html', storeKey:'langhub_en_v1', acctScoped:true, accent:'#2f5d50' },
   { id:'fr', name:'法文', subtitle:'法文訓練場', flag:'FR', path:'modules/fr/index.html', storeKey:'francais_v1', accent:'#3b4f8c' },
-  { id:'es', name:'西文', subtitle:'西文訓練場', flag:'ES', path:'modules/es/index.html', storeKey:'espanol_v1', accent:'#8c3b2f' },
+  { id:'es', name:'西文', subtitle:'西文訓練場', flag:'ES', path:'modules/es/index.html', storeKey:'espanol_v1', acctScoped:true, accent:'#8c3b2f' },
 ];

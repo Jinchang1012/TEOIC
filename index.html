@@ -257,7 +257,9 @@ function statText(m){
   if(!d || typeof d!=='object') return '尚未開始';
   var h = Array.isArray(d.history) ? d.history.length : (d.history && typeof d.history==='object' ? Object.keys(d.history).length : 0);
   var v = (d.vsrs && typeof d.vsrs==='object') ? Object.keys(d.vsrs).length : 0;
-  if(!h && !v) return '尚未開始';
+  var sn = (d.srs && typeof d.srs==='object' && !Array.isArray(d.srs)) ? Object.keys(d.srs).length : 0; // 西文：srs = 已見過的句子
+  if(!h && !v && !sn) return '尚未開始';
+  if(!v && sn) return '練習紀錄 '+h+' 筆・句子 '+sn+' 句';
   return '練習紀錄 '+h+' 筆・單字卡 '+v+' 張';
 }
 function modHtml(m,h){
