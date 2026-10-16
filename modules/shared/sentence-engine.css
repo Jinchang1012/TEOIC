@@ -52,4 +52,19 @@
 .se-note[hidden] { display: none; }
 .se-note-line { margin: 2px 0; }
 .se-note-tag { display: inline-block; margin-right: 6px; padding: 0 8px; border-radius: 10px; background: var(--se-accent); color: #fff; font-size: 12px; font-weight: 600; line-height: 1.6; vertical-align: baseline; }
+/* 打字組句 */
+.se-type-input { display: block; width: 100%; min-height: 72px; margin: 8px 0 0; padding: 10px 12px; font: inherit; font-size: 17px; line-height: 1.5; color: var(--se-fg); background: var(--se-bg); border: 2px solid var(--se-muted); border-radius: 10px; resize: vertical; scroll-margin: 96px 0; }
+.se-type-input:focus { outline: none; border-color: var(--se-accent); }
+.se-type-input[readonly] { opacity: .7; }
+.se-type-hint { font-family: ui-monospace, Consolas, monospace; letter-spacing: .02em; overflow-wrap: anywhere; }
+.se-type-hint[hidden] { display: none; }
+.se-msg.se-warn { color: #b45309; }
+.se-diff { margin: 8px 0; font-size: 18px; line-height: 2; overflow-wrap: anywhere; }
+.se-diff-label { display: inline-block; margin-right: 8px; color: var(--se-muted); font-size: 13px; }
+.se-tk { padding: 1px 3px; border-radius: 4px; }
+.se-tk-miss { color: var(--se-ok); border: 1.5px dashed var(--se-ok); background: rgba(21, 128, 61, .08); }
+.se-tk-extra, .se-tk-wrong { color: var(--se-err); text-decoration: line-through; background: rgba(185, 28, 28, .08); }
+.se-tk-case { color: #b45309; text-decoration: underline wavy #b45309; text-underline-offset: 3px; }
+.se-tk-fix { margin-left: 2px; padding: 1px 3px; border-radius: 4px; color: var(--se-ok); font-weight: 600; background: rgba(21, 128, 61, .1); }
+.se-legend { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 2px 0 6px; font-size: 13px; }
 @media (max-width: 480px) { .se-root { padding: 8px; } .se-zh { font-size: 17px; } }

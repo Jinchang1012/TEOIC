@@ -210,7 +210,7 @@ function login(){
   }).catch(function(e){
     var msg = String((e&&e.message)||'');
     banner = /timeout/.test(msg) ? '登入逾時，請再試一次' : (/GIS/.test(msg) ? '無法載入 Google 登入元件，請確認網路或改用正式網址開啟' : '登入失敗，請檢查網路後再試');
-  }).then(function(){ busy = false; renderAcct(); });
+  }).then(function(){ busy = false; renderAcct(); renderMods(); });
 }
 function logout(){
   var tok = session && session.accessToken;
@@ -222,6 +222,7 @@ function logout(){
   }catch(e){}
   clearSession();
   renderAcct();
+  renderMods();
 }
 
 function isLoggedIn(){
@@ -246,8 +247,13 @@ function renderAcct(){
   $('btnLogout').onclick = logout;
 }
 
+/* acctScoped 模組（英文）的紀錄依登入帳號分 key：<storeKey>::<email 小寫>，未登入用 storeKey 本身 */
+function storeKeyOf(m){
+  var em = session && typeof session.email==='string' ? session.email.trim().toLowerCase() : '';
+  return (m.acctScoped && em) ? m.storeKey+'::'+em : m.storeKey;
+}
 function statText(m){
-  var d = readJSON(m.storeKey);
+  var d = readJSON(storeKeyOf(m));
   if(!d || typeof d!=='object') return '尚未開始';
   var h = Array.isArray(d.history) ? d.history.length : (d.history && typeof d.history==='object' ? Object.keys(d.history).length : 0);
   var v = (d.vsrs && typeof d.vsrs==='object') ? Object.keys(d.vsrs).length : 0;
